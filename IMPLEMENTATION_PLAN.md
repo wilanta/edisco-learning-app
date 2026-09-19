@@ -373,18 +373,13 @@ Begin Phase 7 only when explicitly instructed.
 
 ### Phase 7 — Profile
 
-- **Objective:** Deliver the full profile and preference-editing experience using the early current-user contract and validated generation/reward data.
-- **Specification references:** PRD §4; SRS FR-PROF-01–03; DATA §1; API §7; BL §§1/3.1/4.
-- **Dependencies:** Auth/current-user read from 2, onboarding from 3, generation/quota from 4D, stats from 5/6. Preference changes must obey the already approved job snapshot/reuse compatibility rules.
-- **Expected modules/files:** `apps/web/app/(main)/profile/`, preference form/stat components; `apps/api/src/modules/users/` profile read/update handlers; shared profile DTOs/validators; query invalidation for current user and New suggestions.
-- **Database work:** Update only the approved preference fields. Preserve quota, onboarding grant marker, credential fields and reward aggregates. No schema expansion for unrelated user settings.
-- **Backend work:** Complete `GET /users/me` projection (already introduced earlier), implement `PATCH /users/me` for pace/interests/Other representation, validate allowed fields and partial-update behavior. Reject or ignore disallowed fields only according to the agreed validation contract; never mutate email/password/quota/XP through this endpoint.
-- **Frontend work:** Display name, email, pace, interests, remaining generations, total XP, current and longest streak; allow preference editing with clear save/error states. Refresh generation suggestions and use new preferences on future jobs according to the resolved snapshot rule. Show exhaustion without payment prompts.
-- **Worker/background work:** No new job. Workers must retain the agreed preference context for already submitted jobs and use updated preferences for eligible later requests.
-- **Tests:** Profile projection and editing, validation/Other values, mass-assignment attempts against quota/XP/email/password/onboarding fields, stale UI refresh after generation/answer, mid-job preference changes, subsequent pace-personalized generation/reuse compatibility, unchanged earlier owned content, responsive layout.
-- **Acceptance criteria:** FR-PROF-01–03 are satisfied; displayed quota/stats match persisted outcomes; approved preference updates affect future generation as specified without regranting quota or altering credentials. Previously owned content remains accessible.
-- **Explicit non-goals:** Email/password change workflows, arbitrary name/avatar/settings editing not specified in API, account deletion/export, timezone settings without a product decision, payments or quota replenishment.
-- **Unresolved decisions affecting phase:** OQ-1; A04–A07/A13/A20/A25/A26. A06 may require a reconciled onboarding-state field in the early read contract; do not add it silently only in this phase.
+**Status: COMPLETE**
+
+Implemented the `PATCH /users/me` endpoint in `apps/api/src/modules/users/users.routes.ts` to strictly handle profile updates for allowed fields (`pace`, `interests`) and ignore uneditable fields (e.g. email, totalXp, quota) based on Zod validation.
+Implemented `apps/web/app/(main)/profile/page.tsx` for viewing read-only user stats (Name, Email, Generations Left, XP, Streaks) and updating preferences. Added a `Profile` navigation link to the track page.
+Created `tests/profile.test.mjs` verifying correct profile updates and rejection of unauthorized modifications.
+
+Begin Phase 8 only when explicitly instructed.
 
 ### Phase 8 — Final Integration & Hardening
 

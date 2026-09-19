@@ -71,6 +71,12 @@ export default function TrackPage() {
             🏆 League
           </Link>
           <Link
+            href="/profile"
+            className="text-blue-600 hover:text-blue-800 font-medium mr-4"
+          >
+            👤 Profile
+          </Link>
+          <Link
             href="/new"
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
           >

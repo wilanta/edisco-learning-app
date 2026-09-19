@@ -8,6 +8,11 @@ const onboardingSchema = z.object({
   pace: z.enum(['CASUAL', 'REGULAR', 'INTENSIVE']),
 });
 
+const updateProfileSchema = z.object({
+  interests: z.array(z.string()).min(1).optional(),
+  pace: z.enum(['CASUAL', 'REGULAR', 'INTENSIVE']).optional(),
+});
+
 const usersRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get(
     '/me',
@@ -100,6 +105,57 @@ const usersRoutes: FastifyPluginAsync = async (fastify) => {
         userId: updatedUser.id,
         freeGenerationsLeft: updatedUser.freeGenerationsLeft,
         onboardingCompletedAt: updatedUser.onboardingCompletedAt?.toISOString(),
+      });
+    },
+  );
+
+  fastify.patch(
+    '/me',
+    {
+      preValidation: [fastify.authenticate],
+    },
+    async (request, reply) => {
+      const { userId } = request.user;
+      const parseResult = updateProfileSchema.safeParse(request.body);
+
+      if (!parseResult.success) {
+        return reply.code(400).send({
+          error: 'VALIDATION_ERROR',
+          message: 'Invalid input',
+        });
+      }
+
+      const { interests, pace } = parseResult.data;
+
+      const existingUser = await fastify.db.query.users.findFirst({
+        where: eq(users.id, userId),
+      });
+
+      if (!existingUser) {
+        return reply.code(404).send({
+          error: 'NOT_FOUND',
+          message: 'User not found',
+        });
+      }
+
+      const updates: any = { updatedAt: new Date() };
+      if (interests !== undefined) updates.interests = interests;
+      if (pace !== undefined) updates.pace = pace;
+
+      const [updatedUser] = await fastify.db
+        .update(users)
+        .set(updates)
+        .where(eq(users.id, userId))
+        .returning();
+
+      if (!updatedUser) {
+        throw new Error('Failed to update user');
+      }
+
+      return reply.code(200).send({
+        id: updatedUser.id,
+        pace: updatedUser.pace,
+        interests: updatedUser.interests,
       });
     },
   );
