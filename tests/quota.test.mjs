@@ -17,7 +17,7 @@ const connectionString =
 test('concurrent finalization strictly obeys quota constraint', async (t) => {
   process.env.SIMILARITY_MAX_DISTANCE = '0';
   process.env.OPENAI_API_KEY = 'test';
-  
+
   const { db, pool } = createDatabase(connectionString);
   await migrate(db, {
     migrationsFolder: fileURLToPath(
@@ -50,40 +50,59 @@ test('concurrent finalization strictly obeys quota constraint', async (t) => {
     onboardingCompletedAt: new Date(),
   });
 
-  const [job1] = await db.insert(generationJobs).values({
-    userId,
-    category: 'PROGRAMMING',
-    requestedTopic: 'Topic A',
-    status: 'PENDING'
-  }).returning();
-  
-  const [job2] = await db.insert(generationJobs).values({
-    userId,
-    category: 'PROGRAMMING',
-    requestedTopic: 'Topic B',
-    status: 'PENDING'
-  }).returning();
+  const [job1] = await db
+    .insert(generationJobs)
+    .values({
+      userId,
+      category: 'PROGRAMMING',
+      requestedTopic: 'Topic A',
+      status: 'PENDING',
+    })
+    .returning();
+
+  const [job2] = await db
+    .insert(generationJobs)
+    .values({
+      userId,
+      category: 'PROGRAMMING',
+      requestedTopic: 'Topic B',
+      status: 'PENDING',
+    })
+    .returning();
 
   const p1 = processGeneration(db, job1.id, 'llm').catch(() => {});
   const p2 = processGeneration(db, job2.id, 'llm').catch(() => {});
-  
+
   await Promise.all([p1, p2]);
 
-  const [finalJob1] = await db.select().from(generationJobs).where(eq(generationJobs.id, job1.id));
-  const [finalJob2] = await db.select().from(generationJobs).where(eq(generationJobs.id, job2.id));
+  const [finalJob1] = await db
+    .select()
+    .from(generationJobs)
+    .where(eq(generationJobs.id, job1.id));
+  const [finalJob2] = await db
+    .select()
+    .from(generationJobs)
+    .where(eq(generationJobs.id, job2.id));
   console.log('Job 1:', finalJob1.status, finalJob1.errorMessage);
   console.log('Job 2:', finalJob2.status, finalJob2.errorMessage);
-  console.log('Quota left:', (await db.select().from(users).where(eq(users.id, userId)))[0].freeGenerationsLeft);
+  console.log(
+    'Quota left:',
+    (await db.select().from(users).where(eq(users.id, userId)))[0]
+      .freeGenerationsLeft,
+  );
 
   assert.equal(
     (finalJob1.status === 'DONE' && finalJob2.status === 'FAILED') ||
-    (finalJob1.status === 'FAILED' && finalJob2.status === 'DONE'),
+      (finalJob1.status === 'FAILED' && finalJob2.status === 'DONE'),
     true,
-    'Exactly one job should succeed'
+    'Exactly one job should succeed',
   );
 
   const failedJob = finalJob1.status === 'FAILED' ? finalJob1 : finalJob2;
-  assert.equal(failedJob.errorMessage, 'Free generation quota has been used up');
+  assert.equal(
+    failedJob.errorMessage,
+    'Free generation quota has been used up',
+  );
 
   const [user] = await db.select().from(users).where(eq(users.id, userId));
   assert.equal(user.freeGenerationsLeft, 0, 'Quota should be exactly 0');

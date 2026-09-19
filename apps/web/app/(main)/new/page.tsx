@@ -10,7 +10,7 @@ const CATEGORIES = [
   'MATH',
   'SCIENCE',
   'ENGINEERING',
-  'GENERAL'
+  'GENERAL',
 ];
 
 export default function NewLessonPage() {
@@ -29,10 +29,13 @@ export default function NewLessonPage() {
     setStatusMessage('Submitting request...');
 
     try {
-      const response = await apiFetch<{ jobId: string, status: string }>('/lessons/generate', {
-        method: 'POST',
-        body: JSON.stringify({ topic, category }),
-      });
+      const response = await apiFetch<{ jobId: string; status: string }>(
+        '/lessons/generate',
+        {
+          method: 'POST',
+          body: JSON.stringify({ topic, category }),
+        },
+      );
       setJobId(response.jobId);
     } catch (err: any) {
       setError(err.message || 'Failed to start generation');
@@ -46,7 +49,11 @@ export default function NewLessonPage() {
     const pollJob = async () => {
       if (!jobId) return;
       try {
-        const data = await apiFetch<{ status: string, resultUserLessonId?: string, errorMessage?: string }>(`/lessons/generate/${jobId}`);
+        const data = await apiFetch<{
+          status: string;
+          resultUserLessonId?: string;
+          errorMessage?: string;
+        }>(`/lessons/generate/${jobId}`);
         if (data.status === 'DONE') {
           setStatusMessage('Generation complete! Redirecting...');
           if (data.resultUserLessonId) {
@@ -59,7 +66,9 @@ export default function NewLessonPage() {
           setLoading(false);
           setJobId(null);
         } else {
-          setStatusMessage('Generating lesson... (this might take a few seconds)');
+          setStatusMessage(
+            'Generating lesson... (this might take a few seconds)',
+          );
         }
       } catch (err: any) {
         setError('Error polling generation status: ' + err.message);
@@ -80,16 +89,19 @@ export default function NewLessonPage() {
   return (
     <div className="max-w-2xl mx-auto p-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Create New Lesson</h1>
-      
+
       {error && (
         <div className="bg-red-50 text-red-600 p-4 rounded-md mb-6 border border-red-200">
           {error}
         </div>
       )}
-      
+
       <form onSubmit={handleGenerate} className="space-y-6">
         <div>
-          <label htmlFor="topic" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="topic"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Topic
           </label>
           <input
@@ -103,9 +115,12 @@ export default function NewLessonPage() {
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
           />
         </div>
-        
+
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="category"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Category
           </label>
           <select
@@ -115,18 +130,20 @@ export default function NewLessonPage() {
             disabled={loading}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
           >
-            {CATEGORIES.map(c => (
-              <option key={c} value={c}>{c}</option>
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
             ))}
           </select>
         </div>
-        
+
         <button
           type="submit"
           disabled={loading || !topic.trim()}
           className="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {loading ? (statusMessage || 'Generating...') : 'Generate Lesson'}
+          {loading ? statusMessage || 'Generating...' : 'Generate Lesson'}
         </button>
       </form>
     </div>

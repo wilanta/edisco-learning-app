@@ -226,7 +226,12 @@ export async function processGeneration(
         const [updatedUser] = await tx
           .update(users)
           .set({ freeGenerationsLeft: sql`${users.freeGenerationsLeft} - 1` })
-          .where(and(eq(users.id, job.userId), sql`${users.freeGenerationsLeft} > 0`))
+          .where(
+            and(
+              eq(users.id, job.userId),
+              sql`${users.freeGenerationsLeft} > 0`,
+            ),
+          )
           .returning();
         if (!updatedUser) {
           throw new Error('QUOTA_EXCEEDED');

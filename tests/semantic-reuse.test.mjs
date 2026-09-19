@@ -228,15 +228,13 @@ test('semantic reuse with actual pgvector and transactional generation', {
       const originalPart = await db.query.parts.findFirst({
         where: eq(parts.lessonId, first.resultLessonId),
       });
-      await db
-        .insert(userPartProgress)
-        .values({
-          userLessonId: originalAssignment.id,
-          partId: originalPart.id,
-          isCorrect: true,
-          attempts: 1,
-          xpEarned: 10,
-        });
+      await db.insert(userPartProgress).values({
+        userLessonId: originalAssignment.id,
+        partId: originalPart.id,
+        isCorrect: true,
+        attempts: 1,
+        xpEarned: 10,
+      });
       reused = await job();
       await processGeneration(db, reused.id, 'llm');
       const second = await db.query.generationJobs.findFirst({

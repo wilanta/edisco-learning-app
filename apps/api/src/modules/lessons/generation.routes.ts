@@ -194,7 +194,7 @@ const generationRoutes: FastifyPluginAsync = async (app) => {
             eq(userLessons.lessonId, job.resultLessonId),
             eq(userLessons.trackId, job.trackId),
             eq(userLessons.userId, request.user.userId),
-          )
+          ),
         });
         if (ul) resultUserLessonId = ul.id;
       }

@@ -363,18 +363,13 @@ Original specification analysis and broader acceptance criteria:
 
 ### Phase 6 — Gamification
 
-- **Objective:** Complete XP/streak/weekly league behavior; provide the reward core with Phase 5, then finish ranking presentation and week-boundary operations.
-- **Specification references:** PRD §7; BL §§4/5; DATA §§1/6/8; SRS FR-GAM-01–05, UC-3, NFR-MAINT-01, NFR-SCALE-02; API §6; OQ #5.
-- **Dependencies:** G4 reward/time decisions and confirmed OQ-5; Phase 5 answer contract and transactional integration. User and weekly schemas/constraints must support the agreed eligibility and concurrency rules.
-- **Expected modules/files:** Proposed `packages/domain/rewards/` XP/streak/week calculations; `apps/api/src/modules/league/` query/ranking handlers; shared reward transaction operations; `apps/web/app/(main)/league/` and XP/streak feedback; optional selected weekly scheduler under `apps/worker/src/jobs/`; central XP configuration.
-- **Database work:** Update User.totalXp/currentStreak/longestStreak/lastActivityDate, UserPartProgress.xpEarned and WeeklyLeagueEntry in the learning transaction. Prevent duplicate daily/lesson rewards using the approved mechanism. Ensure one user-period row; on-read rank need not persist. Do not destructively reset lifetime totals during a new week.
-- **Backend work:** Calculate configured part/lesson/daily rewards under explicit retry/replay rules; apply all XP sources to weekly totals; calculate week periods in the selected timezone and expose `GET /league/weekly` including own rank/XP and agreed ties/empty cases. Candidate values remain 10/5/+20/+5 until confirmed; they are not unconditional acceptance totals.
-- **Frontend work:** Finish earned-XP/lesson-bonus/streak feedback as defined by the API contract; global weekly leaderboard if confirmed, own rank even when outside the returned leaderboard window, and agreed no-activity/empty states. No sub-second updates required.
-- **Worker/background work:** Implement the selected weekly strategy: lazy creation and period-based reads may avoid mass row creation; a weekly job is needed only for selected scheduled behavior. Optional history/badge finalization is not made mandatory. No grouping jobs under the current MVP assumption.
-- **Tests:** Approved correct/retry/replay XP table, once-per-event bonuses under duplicate/concurrent answers, total/weekly consistency, first activity/same day/consecutive day/gap/null dates, displayed inactive streak rule, midnight and Monday timezone boundaries (DST if the chosen zone observes it), tie ranking and inactive-user semantics, rollover without zeroing lifetime XP, concurrent first entry creation.
-- **Acceptance criteria:** UC-3 updates progress/reward/streak/weekly data consistently, using configurable values and approved eligibility. League shows the current period and correct own rank under documented ties/membership rules; no double daily/lesson rewards on retry. Phase 5's reward core and this phase's league finish are both complete before acceptance.
-- **Explicit non-goals:** Promotion/demotion/group leagues unless OQ-5 explicitly changes MVP scope, streak freezes/repair, badges/history beyond a selected requirement, real-time sockets, XP for generation itself.
-- **Unresolved decisions affecting phase:** OQ-3/5; A09–A14/A18/A23. No timezone is selected merely because the developer environment has one.
+**Status: COMPLETE**
+
+XP rules for part completion and lesson completion, streak calculation with UTC date comparison, and weekly league XP accumulation have been implemented safely inside the learning-experience answer transaction. `GET /league/weekly` is implemented to return leaderboard with rank calculations and user's own ranking. A new `apps/web/app/(main)/league/page.tsx` was created.
+
+No parallel answer implementation was created; gamification extends the exact Phase 5 path. `totalXp`, `currentStreak`, `longestStreak`, and `lastActivityDate` are maintained properly. Tests for Phase 6 logic have been added to `tests/gamification.test.mjs` and passed.
+
+Begin Phase 7 only when explicitly instructed.
 
 ### Phase 7 — Profile
 

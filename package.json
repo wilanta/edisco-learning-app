@@ -24,7 +24,7 @@
     "lint": "biome lint .",
     "format": "biome format --write .",
     "format:check": "biome format .",
-    "test": "npm run build --workspace @edisco/database --workspace @edisco/api --workspace @edisco/worker && node --env-file-if-exists=.env --test tests/foundation.test.mjs tests/auth.test.mjs tests/onboarding.test.mjs tests/generation.test.mjs tests/llm.test.mjs tests/embedding.test.mjs tests/reuse-config.test.mjs tests/semantic-reuse.test.mjs tests/learning-experience.test.mjs",
+    "test": "npm run build --workspace @edisco/database --workspace @edisco/api --workspace @edisco/worker && node --env-file-if-exists=.env --test tests/foundation.test.mjs tests/auth.test.mjs tests/onboarding.test.mjs tests/generation.test.mjs tests/llm.test.mjs tests/embedding.test.mjs tests/reuse-config.test.mjs tests/semantic-reuse.test.mjs tests/learning-experience.test.mjs tests/gamification.test.mjs",
     "test:generation": "npm run build --workspace @edisco/database --workspace @edisco/api --workspace @edisco/worker && node --env-file-if-exists=.env --test tests/generation.test.mjs tests/llm.test.mjs tests/embedding.test.mjs tests/reuse-config.test.mjs tests/semantic-reuse.test.mjs",
     "db:generate": "npm run db:generate --workspace @edisco/api --",
     "db:migrate": "npm run db:migrate --workspace @edisco/api",

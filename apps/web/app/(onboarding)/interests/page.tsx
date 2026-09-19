@@ -1,7 +1,10 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getOnboardingDraft, updateOnboardingDraft } from '../../../lib/onboarding-draft';
+import {
+  getOnboardingDraft,
+  updateOnboardingDraft,
+} from '../../../lib/onboarding-draft';
 
 const CATEGORIES = [
   'Programming',
@@ -10,7 +13,7 @@ const CATEGORIES = [
   'Science',
   'Engineering',
   'Career/Soft Skills',
-  'Other'
+  'Other',
 ];
 
 export default function InterestsPage() {
@@ -21,9 +24,13 @@ export default function InterestsPage() {
   useEffect(() => {
     const draft = getOnboardingDraft();
     if (draft.interests) {
-      const standard = draft.interests.filter(i => CATEGORIES.includes(i) || i === 'Other');
-      const other = draft.interests.find(i => !CATEGORIES.includes(i) && i !== 'Other');
-      
+      const standard = draft.interests.filter(
+        (i) => CATEGORIES.includes(i) || i === 'Other',
+      );
+      const other = draft.interests.find(
+        (i) => !CATEGORIES.includes(i) && i !== 'Other',
+      );
+
       const sel = [...standard];
       if (other) {
         sel.push('Other');
@@ -35,7 +42,7 @@ export default function InterestsPage() {
 
   const toggleCategory = (cat: string) => {
     if (selected.includes(cat)) {
-      setSelected(selected.filter(c => c !== cat));
+      setSelected(selected.filter((c) => c !== cat));
     } else {
       setSelected([...selected, cat]);
     }
@@ -48,11 +55,11 @@ export default function InterestsPage() {
     if (selected.includes('Other') && otherText.trim()) {
       // Replace "Other" with the actual text, or add it alongside.
       // The API expects a list of strings.
-      finalInterests = finalInterests.filter(i => i !== 'Other');
+      finalInterests = finalInterests.filter((i) => i !== 'Other');
       finalInterests.push(otherText.trim());
     } else if (selected.includes('Other') && !otherText.trim()) {
-       // If other is selected but text is empty, just remove it or keep it as 'Other'
-       // We'll keep it as 'Other'
+      // If other is selected but text is empty, just remove it or keep it as 'Other'
+      // We'll keep it as 'Other'
     }
 
     updateOnboardingDraft({ interests: finalInterests });
@@ -61,11 +68,15 @@ export default function InterestsPage() {
 
   return (
     <div className="flex flex-col items-center min-h-screen p-6 max-w-xl mx-auto w-full">
-      <h1 className="text-3xl font-bold mt-12 mb-2 text-center">What do you want to learn?</h1>
-      <p className="text-gray-500 mb-8 text-center">Select at least one interest.</p>
+      <h1 className="text-3xl font-bold mt-12 mb-2 text-center">
+        What do you want to learn?
+      </h1>
+      <p className="text-gray-500 mb-8 text-center">
+        Select at least one interest.
+      </p>
 
       <div className="flex flex-col gap-3 w-full mb-8">
-        {CATEGORIES.map(cat => (
+        {CATEGORIES.map((cat) => (
           <div key={cat} className="w-full">
             <button
               type="button"
@@ -91,7 +102,7 @@ export default function InterestsPage() {
         ))}
       </div>
 
-      <button 
+      <button
         type="button"
         onClick={handleNext}
         disabled={selected.length === 0}

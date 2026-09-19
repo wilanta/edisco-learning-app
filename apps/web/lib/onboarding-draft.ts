@@ -29,4 +29,3 @@ export function clearOnboardingDraft() {
   if (typeof window === 'undefined') return;
   sessionStorage.removeItem(STORAGE_KEY);
 }
-

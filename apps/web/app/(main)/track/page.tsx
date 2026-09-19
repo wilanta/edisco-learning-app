@@ -30,7 +30,7 @@ export default function TrackPage() {
   useEffect(() => {
     Promise.all([
       apiFetch('/users/me'),
-      apiFetch<{ tracks: Track[] }>('/tracks')
+      apiFetch<{ tracks: Track[] }>('/tracks'),
     ])
       .then(([userData, tracksData]) => {
         setUser(userData);
@@ -49,9 +49,11 @@ export default function TrackPage() {
 
   useEffect(() => {
     if (selectedTrackId) {
-      apiFetch<{ lessons: Lesson[] }>(`/tracks/${selectedTrackId}`).then((data) => {
-        setLessons(data.lessons || []);
-      }).catch(console.error);
+      apiFetch<{ lessons: Lesson[] }>(`/tracks/${selectedTrackId}`)
+        .then((data) => {
+          setLessons(data.lessons || []);
+        })
+        .catch(console.error);
     }
   }, [selectedTrackId]);
 
@@ -62,10 +64,20 @@ export default function TrackPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Your Learning Tracks</h1>
         <div className="space-x-4">
-          <Link href="/new" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+          <Link
+            href="/league"
+            className="text-blue-600 hover:text-blue-800 font-medium mr-4"
+          >
+            🏆 League
+          </Link>
+          <Link
+            href="/new"
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          >
             + New Lesson
           </Link>
-          <button type="button"
+          <button
+            type="button"
             onClick={() => {
               removeAuthToken();
               router.replace('/welcome');
@@ -78,26 +90,42 @@ export default function TrackPage() {
       </div>
 
       <div className="bg-white rounded-xl shadow p-6 mb-8 border border-gray-100">
-        <h2 className="text-xl font-bold mb-4 text-gray-800">Welcome, {user?.name}!</h2>
+        <h2 className="text-xl font-bold mb-4 text-gray-800">
+          Welcome, {user?.name}!
+        </h2>
         <div className="flex gap-6 text-sm text-gray-600">
-          <p><span className="font-semibold">Pace:</span> {user?.pace}</p>
-          <p><span className="font-semibold">Generations left:</span> {user?.freeGenerationsLeft}</p>
+          <p>
+            <span className="font-semibold">Pace:</span> {user?.pace}
+          </p>
+          <p>
+            <span className="font-semibold">Generations left:</span>{' '}
+            {user?.freeGenerationsLeft}
+          </p>
         </div>
       </div>
-      
+
       {tracks.length === 0 ? (
         <div className="text-center p-16 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
-          <h3 className="text-xl font-medium text-gray-700 mb-2">No tracks yet</h3>
-          <p className="text-gray-500 mb-6">Start your learning journey by generating your first lesson.</p>
-          <Link href="/new" className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 text-lg font-medium">
+          <h3 className="text-xl font-medium text-gray-700 mb-2">
+            No tracks yet
+          </h3>
+          <p className="text-gray-500 mb-6">
+            Start your learning journey by generating your first lesson.
+          </p>
+          <Link
+            href="/new"
+            className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 text-lg font-medium"
+          >
             Generate First Lesson
           </Link>
         </div>
       ) : (
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-1 space-y-3">
-            <h3 className="font-semibold text-gray-700 mb-4 uppercase text-sm tracking-wider">Tracks</h3>
-            {tracks.map(t => (
+            <h3 className="font-semibold text-gray-700 mb-4 uppercase text-sm tracking-wider">
+              Tracks
+            </h3>
+            {tracks.map((t) => (
               <button
                 key={t.id}
                 type="button"
@@ -107,17 +135,21 @@ export default function TrackPage() {
                 <div className="font-medium truncate">{t.title}</div>
                 <div className="text-xs mt-1 opacity-75">{t.category}</div>
                 <div className="mt-3 bg-gray-200 h-1.5 rounded-full overflow-hidden">
-                  <div 
-                    className="bg-blue-500 h-full" 
-                    style={{ width: `${t.lessonCount > 0 ? (t.completedCount / t.lessonCount) * 100 : 0}%` }}
+                  <div
+                    className="bg-blue-500 h-full"
+                    style={{
+                      width: `${t.lessonCount > 0 ? (t.completedCount / t.lessonCount) * 100 : 0}%`,
+                    }}
                   />
                 </div>
               </button>
             ))}
           </div>
-          
+
           <div className="md:col-span-2">
-            <h3 className="font-semibold text-gray-700 mb-4 uppercase text-sm tracking-wider">Lessons</h3>
+            <h3 className="font-semibold text-gray-700 mb-4 uppercase text-sm tracking-wider">
+              Lessons
+            </h3>
             <div className="space-y-3">
               {lessons.map((lesson) => (
                 <Link
@@ -127,8 +159,12 @@ export default function TrackPage() {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-sm font-medium text-blue-600 mb-1">Lesson {lesson.order}</div>
-                      <div className="text-lg font-medium text-gray-900">{lesson.title}</div>
+                      <div className="text-sm font-medium text-blue-600 mb-1">
+                        Lesson {lesson.order}
+                      </div>
+                      <div className="text-lg font-medium text-gray-900">
+                        {lesson.title}
+                      </div>
                     </div>
                     <div className="flex-shrink-0">
                       {lesson.status === 'COMPLETED' ? (

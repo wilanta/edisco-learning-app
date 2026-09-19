@@ -7,6 +7,7 @@ import usersRoutes from './modules/users/users.routes.js';
 import generationRoutes from './modules/lessons/generation.routes.js';
 import tracksRoutes from './modules/tracks/tracks.routes.js';
 import lessonsRoutes from './modules/lessons/lessons.routes.js';
+import leagueRoutes from './modules/league/league.routes.js';
 
 export function buildApp() {
   const app = Fastify({ logger: true });
@@ -23,6 +24,7 @@ export function buildApp() {
   app.register(generationRoutes, { prefix: '/lessons/generate' });
   app.register(tracksRoutes, { prefix: '/tracks' });
   app.register(lessonsRoutes, { prefix: '/lessons' });
+  app.register(leagueRoutes, { prefix: '/league' });
 
   app.get<{ Reply: HealthResponse }>('/health', async () => ({
     status: 'ok',

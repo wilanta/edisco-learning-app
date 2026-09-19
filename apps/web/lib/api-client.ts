@@ -1,4 +1,5 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export function getAuthToken() {
   if (typeof window === 'undefined') return null;
@@ -17,15 +18,22 @@ export function removeAuthToken() {
   }
 }
 
-export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+export async function apiFetch<T>(
+  endpoint: string,
+  options: RequestInit = {},
+): Promise<T> {
   const token = getAuthToken();
   const headers = new Headers(options.headers);
-  
+
   if (token && !headers.has('Authorization')) {
     headers.set('Authorization', `Bearer ${token}`);
   }
-  
-  if (!headers.has('Content-Type') && options.body instanceof URLSearchParams === false && !(options.body instanceof FormData)) {
+
+  if (
+    !headers.has('Content-Type') &&
+    options.body instanceof URLSearchParams === false &&
+    !(options.body instanceof FormData)
+  ) {
     headers.set('Content-Type', 'application/json');
   }
 
@@ -42,4 +50,3 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
 
   return data as T;
 }
-

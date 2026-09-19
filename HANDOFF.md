@@ -3,33 +3,53 @@
 ## Current Status
 - **Phase 1-4D:** Complete.
 - **Phase 5 (Learning Experience End-to-End):** Complete.
-  - Implemented backend retrieval for tracks and lessons.
-  - Implemented backend answer submission and persistence (with placeholder XP).
-  - Implemented generation polling with `resultUserLessonId` payload.
-  - Created integration tests in `tests/learning-experience.test.mjs`.
-  - Frontend implemented for tracks list, lesson exercises, and generation flow.
-- **Phase 6 (Gamification & Social):** Next.
+- **Phase 6 (Gamification & Social):** Complete.
+  - Implemented XP calculation correctly in the answer submission flow (10 for first try, 5 for retry, 20 for full lesson completion).
+  - Implemented streak tracking via `lastActivityDate` with UTC calculations. Added daily 5 XP streak bonus.
+  - Implemented Weekly League XP aggregation into `weeklyLeagueEntries`.
+  - Implemented `GET /league/weekly` API providing the leaderboard based on the week's aggregated XP.
+  - Added frontend `/league` page for Weekly League.
+  - Wrote and passed comprehensive unit tests in `tests/gamification.test.mjs`.
+- **Phase 7 (Profile):** Next.
 
-## Next Agent Tasks
-1. Review the Phase 6 requirements in `IMPLEMENTATION_PLAN.md` (Leaderboards, Streak logic, XP).
-2. Expand the placeholder gamification code (`xpEarned`) implemented in Phase 5 to update actual XP and Streaks in the database.
-3. Build the leaderboard backend and frontend.
+## Current Phase: Phase 6 — Gamification
+**Phase Status:** COMPLETE
+**Last Agent:** Antigravity
+**Last Verified Commit:** N/A
 
-## Phase 4D: Generation Reliability, Quota and Expiry
+## Completed Work
+- Replaced placeholder `xpEarned = 0` with real gamification transaction updates.
+- Integrated `totalXp`, `currentStreak`, `longestStreak`, and `lastActivityDate` on the `User` model.
+- Integrated `weeklyLeagueEntries` to track rolling XP for the global weekly league.
+- Added API endpoints for league ranking data (`/league/weekly`).
+- Added frontend `league` screen and integrated navigation into track page.
+- Wrote integration tests covering: correct XP values (first try vs retry), streak bonuses, lesson completion bonuses, and leaderboard responses.
 
-### Status: COMPLETE
+## Remaining Work
+- Phase 7 (Profile)
 
-The Generation Reliability, Quota, and Expiry infrastructure (Phase 4D) has been successfully implemented and validated. The completion rules laid out in the requirements have been satisfied.
+## Important Implementation Decisions
+- **Dates & Timezones:** Used UTC for streak and week-start logic to ensure consistency and avoid relying on server-local time. Week start is set to Monday 00:00 UTC.
+- **Weekly League Creation:** Implemented lazy creation of `weeklyLeagueEntries` on the first XP gain of the week rather than using an active cron job to create empty rows, reducing load.
+- **Data correctness:** Handled XP rewarding transactionally to prevent duplicate awards.
 
-### Work Completed:
+## Files Changed
+- `apps/api/src/modules/lessons/lessons.routes.ts`: Added gamification logic into the answer transaction.
+- `apps/api/src/modules/league/league.routes.ts`: New route to fetch the weekly leaderboard.
+- `apps/api/src/app.ts`: Registered `leagueRoutes`.
+- `apps/web/app/(main)/league/page.tsx`: Created frontend league UI.
+- `apps/web/app/(main)/track/page.tsx`: Added link to League.
+- `tests/gamification.test.mjs`: Added gamification unit tests.
+- `package.json`: Included gamification test file into test script.
+- `IMPLEMENTATION_PLAN.md`: Updated status to COMPLETE.
 
-1. **Atomic Quota Decrement**: Implemented atomic quota consumption as part of the database transaction in  pps/worker/src/generation.ts. When a user requests a generation, quota is checked at the API layer, but it is **only strictly decremented** when the job successfully finalizes (status: DONE). Failed jobs (due to queue crashes, embedding failures, or OpenAI issues) do not consume quota.
-2. **Idempotent Expiry Cron Job**: Added  pps/worker/src/jobs/expire-lessons.ts, which safely marks lessons as expired for semantic reuse if their expiresAt date has passed.
-3. **Flaky LLM Test Cleanup**: Identified and removed a flaky, unmocked LLM test in generation.test.mjs that was inappropriately making real requests without an API key and sporadically causing Fastify timeout errors during concurrent test runs.
-4. **Reliability Tests**: Wrote missing concurrency, expiry, and finalization limit tests (e.g., 	ests/quota.test.mjs, 	ests/expire-lessons.test.mjs). Verified idempotent database behaviors.
+## Validation Status
+- Evaluated `tests/gamification.test.mjs` unit tests specifically targeting streaks, retry XP logic, lesson completion bonuses, and week league generation.
+- Build passed cleanly without TS errors.
+- Previous Phase 5 regression tests in the codebase continued passing.
 
-- **Next step:** Do not proceed to Phase 5 until instructed.
+## Known Issues
+- Currently, league uses a global leaderboard (MVP) without tiers/grouping.
 
-### Notes for Next Agent:
-The full test suite (
-pm run test) passes reliably. processGeneration now includes strict checking, atomic limits, and robust fallback logic when generation or embedding services fail.
+## Next Action
+Begin Phase 7 only when explicitly instructed.
