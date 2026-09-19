@@ -1,0 +1,20 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "includes": [
+      "**",
+      "!**/next-env.d.ts",
+      "!**/dist",
+      "!**/.next",
+      "!**/node_modules",
+      "!**/drizzle/meta",
+      "!package-lock.json",
+      "!docs",
+      "!IMPLEMENTATION_PLAN.md"
+    ]
+  },
+  "formatter": { "indentStyle": "space" },
+  "javascript": { "formatter": { "quoteStyle": "single" } },
+  "css": { "parser": { "tailwindDirectives": true } }
+}
