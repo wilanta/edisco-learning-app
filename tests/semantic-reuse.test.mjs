@@ -418,6 +418,7 @@ test('semantic reuse with actual pgvector and transactional generation', {
           'errorMessage',
           'jobId',
           'resultLessonId',
+          'resultUserLessonId',
           'status',
           'trackId',
         ]);

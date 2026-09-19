@@ -10,7 +10,7 @@ test('foundation health and invalid configuration', async () => {
     const health = await app.inject({ method: 'GET', url: '/health' });
     assert.equal(health.statusCode, 200);
     assert.deepEqual(health.json(), { status: 'ok', service: 'api' });
-    const missing = await app.inject({ method: 'GET', url: '/lessons' });
+    const missing = await app.inject({ method: 'GET', url: '/not-a-route' });
     assert.equal(missing.statusCode, 404);
     assert.equal(missing.json().error, 'NOT_FOUND');
 

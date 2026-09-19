@@ -5,6 +5,8 @@ import authPlugin from './plugins/auth.js';
 import authRoutes from './modules/auth/auth.routes.js';
 import usersRoutes from './modules/users/users.routes.js';
 import generationRoutes from './modules/lessons/generation.routes.js';
+import tracksRoutes from './modules/tracks/tracks.routes.js';
+import lessonsRoutes from './modules/lessons/lessons.routes.js';
 
 export function buildApp() {
   const app = Fastify({ logger: true });
@@ -19,6 +21,8 @@ export function buildApp() {
   app.register(authRoutes, { prefix: '/auth' });
   app.register(usersRoutes, { prefix: '/users' });
   app.register(generationRoutes, { prefix: '/lessons/generate' });
+  app.register(tracksRoutes, { prefix: '/tracks' });
+  app.register(lessonsRoutes, { prefix: '/lessons' });
 
   app.get<{ Reply: HealthResponse }>('/health', async () => ({
     status: 'ok',

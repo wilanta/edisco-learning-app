@@ -186,6 +186,7 @@ test('generation API -> PostgreSQL -> Redis -> worker -> status', {
         jobId,
         status: 'PENDING',
         resultLessonId: null,
+        resultUserLessonId: null,
         trackId: null,
         errorMessage: null,
       });

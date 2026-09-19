@@ -346,7 +346,7 @@ Original specification analysis and broader acceptance criteria:
 - **Explicit non-goals:** First implementation of transactions/idempotency, paywalls/quota refresh, distributed services, unsupported unconditional latency/uptime claims, concealing unresolved operational policies as a test pass.
 - **Unresolved decisions affecting phase:** OQ-4/6/7; A04/A07/A15–A18/A21/A23–A25/A27. In-flight admission/retry/error rules must be settled before acceptance, even if their low-level mechanism is an implementation choice.
 
-### Phase 5 — Learning Experience
+### [x] Phase 5 — Learning Experience
 
 - **Objective:** Deliver Track/Lesson browsing, all agreed exercise types, resumable progress and immediate answer feedback through a vertical slice that includes the Phase 6 reward core.
 - **Specification references:** PRD §§4/5/7.1; SRS FR-TRK-01–06, FR-GAM-01–04, UC-2/3, NFR-USE-01/02; BL §§3/4/5; DATA §§2–6/8; API §§3/5.

@@ -3,6 +3,7 @@ import {
   generationJobs,
   tracks,
   users,
+  userLessons,
 } from '@edisco/database/schema';
 import type { GenerationStatusResponse } from '@edisco/shared-types';
 import { Queue } from 'bullmq';
@@ -181,14 +182,28 @@ const generationRoutes: FastifyPluginAsync = async (app) => {
           eq(generationJobs.userId, request.user.userId),
         ),
       });
-      if (!job)
+      if (!job) {
         return reply
           .code(404)
           .send({ error: 'NOT_FOUND', message: 'Generation job not found' });
+      }
+      let resultUserLessonId: string | null = null;
+      if (job.status === 'DONE' && job.resultLessonId && job.trackId) {
+        const ul = await app.db.query.userLessons.findFirst({
+          where: and(
+            eq(userLessons.lessonId, job.resultLessonId),
+            eq(userLessons.trackId, job.trackId),
+            eq(userLessons.userId, request.user.userId),
+          )
+        });
+        if (ul) resultUserLessonId = ul.id;
+      }
+
       return {
         jobId: job.id,
         status: job.status,
         resultLessonId: job.resultLessonId,
+        resultUserLessonId,
         trackId: job.trackId,
         errorMessage: job.errorMessage,
       };

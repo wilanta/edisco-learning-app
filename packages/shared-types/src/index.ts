@@ -7,6 +7,7 @@ export type GenerationStatusResponse = {
   jobId: string;
   status: 'PENDING' | 'PROCESSING' | 'DONE' | 'FAILED';
   resultLessonId: string | null;
+  resultUserLessonId: string | null;
   trackId: string | null;
   errorMessage: string | null;
 };
