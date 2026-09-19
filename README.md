@@ -1,6 +1,6 @@
 # Edisco
 
-Phase 0 foundation and Phase 1 persistence: a Next.js frontend, Fastify API, separate Node.js worker, and shared PostgreSQL/Drizzle package in one npm workspace. Product features start in later phases.
+Edisco has a Next.js frontend, Fastify API, separate Node.js worker, and shared PostgreSQL/Drizzle package. Authentication and onboarding are implemented; Phase 4A adds an opt-in asynchronous generation placeholder. Real lesson generation is not implemented.
 
 ## Requirements and setup
 
@@ -42,10 +42,10 @@ Edit `packages/database/src/schema.ts`, then run `npm run db:generate -- --name=
 
 Persistence decisions and limits:
 
-- All eight documented entities use UUID keys, snake_case SQL names, required/nullable fields as specified, and the documented defaults. Instant timestamps use `timestamptz`; calendar dates use `date`. IDs and creation/update timestamps receive insertion defaults. Later application writes must set `updatedAt` and compute `expiresAt` from `createdAt + 3 months`; no lifecycle business logic runs in the database.
+- All eight documented entities use UUID keys, snake_case SQL names, and the documented defaults; Phase 2's nullable registration fields are noted below. Instant timestamps use `timestamptz`; calendar dates use `date`. IDs and creation/update timestamps receive insertion defaults. Later application writes must set `updatedAt` and compute `expiresAt` from `createdAt + 3 months`; no lifecycle business logic runs in the database.
 - Ordered parts, ordered track assignments, progress per assignment/part, and weekly entries per user/week are unique. Checks enforce part positions 1–5, positive assignment order, nonnegative counters, Monday week starts, and positive optional rank. Composite foreign keys enforce track ownership; SQL triggers reject progress linked to a part from another lesson, including parent changes. Foreign keys use `NO ACTION`, preserving referenced content. Assigning the same shared lesson again is permitted; replay/reward policy remains open.
 - The user selected Drizzle and explicitly deferred dimension-specific vector migration to Phase 4C. `Lesson.embedding` is currently a required, dimensionless pgvector column with a typed `number[]` mapping; no model or approximate-neighbor index is chosen. Phase 4C must validate stored dimensions and add `vector(N)` plus the chosen index/operator. See [pgvector's dimension guidance](https://github.com/pgvector/pgvector#can-i-store-vectors-with-different-dimensions-in-the-same-column) and [Drizzle custom types](https://orm.drizzle.team/docs/custom-types).
-- `User.pace` remains required with no fabricated default, quota starts at 3, and the seven explicitly named part types are represented. The audited pre-onboarding account conflict, quota activation, additional part types, reward rules, job reliability, and open product decisions still require their later-phase decisions. This schema does not settle them.
+- Committed migration 0002 makes `User.pace` and `interests` nullable for registration before onboarding. Registration inherits quota default 3; first onboarding writes 3 again. Generation requires completed onboarding regardless of that balance. The seven explicitly named part types are represented. These prior implementation choices need reconciliation with the original model; Phase 4A preserves them. Additional part types, reward rules, and other open product decisions remain unresolved.
 - Drizzle Kit 0.31.10 currently brings four moderate audit findings through its development-only legacy esbuild loader. Production dependency audit is clean. No esbuild development server is exposed by these database commands; an incompatible downgrade was not applied.
 
 ## Development
@@ -58,13 +58,25 @@ npm run dev:api
 npm run dev:worker
 ```
 
-- Web: `http://localhost:3000` (static placeholder only).
+- Web: `http://localhost:3000` (existing onboarding/auth flow and placeholder Track page; no generation UI).
 - API: `http://127.0.0.1:3001/health` returns `{"status":"ok","service":"api"}`. This is process liveness, not datastore readiness.
-- Worker: validates `REDIS_URL`, opens a BullMQ-compatible Redis connection and logs readiness. It has no HTTP listener, queue, processor, scheduled job, or generation logic. It does not retry Redis failures; recovery policy belongs to Phase 4A.
+- Worker: consumes `edisco-generation` through BullMQ and persists generation job status. Set `GENERATION_PLACEHOLDER_ENABLED=true` only to exercise the Phase 4A placeholder. PostgreSQL and Redis must be running; the worker has no HTTP listener or real generation logic.
 
 API and worker scripts load the root `.env` with Node's native environment-file support. Existing process variables take precedence. Keep datastore credentials server-side; no secrets are injected into the web application. API `PORT` must be 1–65535. API `HOST` defaults to loopback; deployment settings remain deferred.
 
 Stop processes with Ctrl+C. Stop infrastructure with `npm run infra:down` (or `wsl -d Ubuntu-24.04 -- docker compose down`). Named data volumes are preserved.
+
+## Phase 4A pipeline verification
+
+Set a private `JWT_SECRET` and explicitly set `GENERATION_PLACEHOLDER_ENABLED=true` in your local `.env` to run the authenticated API and placeholder worker. Apply existing migrations with `npm run db:migrate`, then start API and worker using the commands above. Keep the flag disabled for deployment until real generation is implemented.
+
+An onboarded bearer-token user with positive quota can submit `POST /lessons/generate` with `{ "topic": "Python basics", "category": "PROGRAMMING" }`. Poll `GET /lessons/generate/:jobId` for PENDING → PROCESSING → DONE or FAILED. To continue an owned track, include its `trackId`; category must match, and omitted topic uses the track title for this placeholder. Only the owner can poll the job.
+
+The placeholder changes only GenerationJob state. DONE has `resultLessonId: null`; a new track is not created. No lesson, parts, assignment, embeddings, quota decrement, expiry, or generation UI is implemented. Queue submission failure produces HTTP 503 with a safe GENERATION_FAILED error and persists FAILED; worker failures expose a sanitized message. Raw database/Redis errors are not returned by the status endpoint.
+
+Run `npm run test:generation` with the local databases running. It creates/removes its own PostgreSQL database and Redis queue namespace, launches a separate worker process, and verifies success, failure, ownership, queue outage, duplicate delivery, and zero content/quota side effects. The suite supplies its own JWT secret and placeholder flag. `GENERATION_QUEUE_PREFIX` optionally isolates queues (default `bull`); API and worker must use the same value. It is used by tests without flushing shared Redis data.
+
+BullMQ handles queue delivery and stalled jobs; connection settings follow its [producer/worker guidance](https://docs.bullmq.io/guide/connections). There is no durable DB-to-queue reconciliation yet: a crash between insert and enqueue or a database outage while persisting terminal status can strand a job. Request idempotency, queue retention, provider deadlines/retries, and atomic content/quota finalization must be settled before real production generation. Terminal placeholder queue records currently remain in Redis.
 
 ## Checks and production startup
 
@@ -111,12 +123,12 @@ This follows [architecture.md](docs/architecture.md) §§1/2/5:
 - **Biome** handles lint and format with one dependency. It is a [documented Next.js option](https://nextjs.org/docs/app/getting-started/installation); this avoids the conflicting ESLint 10 peer ranges in the current React/a11y plugin stack. Tailwind uses the [official PostCSS integration](https://tailwindcss.com/docs/installation/framework-guides/nextjs).
 - **PostgreSQL 17/pgvector and Redis 7.4** run locally with persistent volumes; Redis uses `noeviction` and append-only persistence. BullMQ owns its Redis connection behavior; no custom queue abstraction was added. See its [connection guidance](https://docs.bullmq.io/guide/connections).
 - **Drizzle** was selected by the user for Phase 1. Schema/client code is shared by API and worker through `packages/database`; migration ownership remains under `apps/api`. There are no repositories, services, or automatic startup migrations.
-- **Deferred by scope:** auth integration, provider SDKs, runtime business configuration, hosting, shadcn components, TanStack Query/Zustand providers, domain packages and feature directories. Add them when the approved phase first needs them. This foundation makes no product decisions about the seven open questions.
+- **Existing authentication:** Fastify JWT and bcrypt were implemented in Phase 2; Phase 4A reuses them. Provider SDKs, hosting, generation frontend, and later feature modules remain deferred. Open product decisions are not silently resolved by the placeholder pipeline.
 
 The initial page language is English placeholder copy, not a finalized product language choice. PWA installability remains unresolved. The domain module paths and feature route groups in the architecture are reserved for later phases, rather than populated with nonfunctional endpoints/screens now.
 
 Next.js generated `apps/web/AGENTS.md` during development startup; its managed framework guidance is retained. The unrelated generated `CLAUDE.md` alias was removed during Ponytail review. ECC's installed architect guide was applied locally to the structure; no ECC CLI command or extra agent was assumed.
 
-On the verification machine Redis reported that the WSL host's `vm.overcommit_memory` setting was disabled. Startup/connectivity passed; no host-wide kernel settings were changed. Revisit the setting before exercising persistent queue workloads in Phase 4A.
+On the verification machine Redis reports that the WSL host's `vm.overcommit_memory` setting is disabled. Local queue verification passed; no host-wide kernel settings were changed. Revisit this before production persistent queue workloads.
 
-The existing [specification index](docs/README.md), [implementation plan](IMPLEMENTATION_PLAN.md), and [handoff](HANDOFF.md) retain the requirements, current state, and unresolved decisions. Phase 2 has not started.
+The existing [specification index](docs/README.md), [implementation plan](IMPLEMENTATION_PLAN.md), and [handoff](HANDOFF.md) retain the requirements, current state, and unresolved decisions. Phase 4B has not started.

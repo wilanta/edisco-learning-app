@@ -3,7 +3,8 @@ import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { buildApp } from '../apps/api/dist/app.js';
 
-test('foundation exposes health only and rejects invalid configuration', async () => {
+test('foundation health and invalid configuration', async () => {
+  process.env.JWT_SECRET = 'foundation-test-only';
   const app = buildApp();
   try {
     const health = await app.inject({ method: 'GET', url: '/health' });

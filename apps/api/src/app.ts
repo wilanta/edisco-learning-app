@@ -1,10 +1,10 @@
 import Fastify from 'fastify';
 import type { HealthResponse } from '@edisco/shared-types';
-import { createDatabase } from '@edisco/database';
 import dbPlugin from './plugins/db.js';
 import authPlugin from './plugins/auth.js';
 import authRoutes from './modules/auth/auth.routes.js';
 import usersRoutes from './modules/users/users.routes.js';
+import generationRoutes from './modules/lessons/generation.routes.js';
 
 export function buildApp() {
   const app = Fastify({ logger: true });
@@ -18,6 +18,7 @@ export function buildApp() {
   // Register Routes
   app.register(authRoutes, { prefix: '/auth' });
   app.register(usersRoutes, { prefix: '/users' });
+  app.register(generationRoutes, { prefix: '/lessons/generate' });
 
   app.get<{ Reply: HealthResponse }>('/health', async () => ({
     status: 'ok',

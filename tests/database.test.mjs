@@ -71,7 +71,7 @@ test('persistence migrations and relational integrity', async (t) => {
       ]);
       assert.equal(
         (await query('SELECT * FROM drizzle.__drizzle_migrations')).rowCount,
-        2,
+        3,
       );
       assert.equal(
         (await query("SELECT * FROM pg_extension WHERE extname = 'vector'"))
@@ -202,6 +202,15 @@ test('persistence migrations and relational integrity', async (t) => {
       assert.equal(alice.currentStreak, 0);
       assert.equal(alice.longestStreak, 0);
       assert.equal(alice.passwordHash, null);
+      const [newAccount] = await db
+        .insert(schema.users)
+        .values({
+          email: 'before-onboarding@example.test',
+          name: 'New account',
+        })
+        .returning();
+      assert.equal(newAccount.pace, null);
+      assert.equal(newAccount.interests, null);
       assert.equal(alice.onboardingCompletedAt, null);
       assert.equal(alice.lastActivityDate, null);
       assert.ok(alice.createdAt instanceof Date);
@@ -266,12 +275,6 @@ test('persistence migrations and relational integrity', async (t) => {
           'UPDATE users SET email = $1 WHERE id = $2',
           [alice.email, bob.id],
           '23505',
-        ],
-        ['UPDATE users SET pace = NULL WHERE id = $1', [alice.id], '23502'],
-        [
-          'UPDATE users SET interests = NULL WHERE id = $1',
-          [alice.id],
-          '23502',
         ],
         [
           "UPDATE users SET pace = 'UNKNOWN' WHERE id = $1",

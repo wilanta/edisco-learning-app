@@ -18,11 +18,14 @@ test('Authentication flow', async (t) => {
   const testUrl = new URL(connectionString);
   testUrl.pathname = `/${databaseName}`;
   let database;
+  let app;
+  let created = false;
 
   t.after(async () => {
     try {
+      await app?.close();
       if (database) await database.pool.end();
-      await admin.pool.query(`DROP DATABASE "${databaseName}"`);
+      if (created) await admin.pool.query(`DROP DATABASE "${databaseName}"`);
     } finally {
       await admin.pool.end();
     }
@@ -32,6 +35,7 @@ test('Authentication flow', async (t) => {
     `CREATE DATABASE "${databaseName}" TEMPLATE template0`,
   );
   database = createDatabase(testUrl.toString());
+  created = true;
 
   const migrationsFolder = fileURLToPath(
     new URL('../apps/api/drizzle/', import.meta.url),
@@ -40,11 +44,7 @@ test('Authentication flow', async (t) => {
 
   process.env.DATABASE_URL = testUrl.toString();
   process.env.JWT_SECRET = 'test-secret';
-  const app = buildApp();
-
-  t.after(async () => {
-    await app.close();
-  });
+  app = buildApp();
 
   await t.test(
     'POST /auth/register creates user and returns token',
