@@ -402,90 +402,90 @@ Phase numbers refer to Section 6 with the sequencing changes in Section 5. "5/6 
 
 ### 7.1 Functional requirements — all 42 SRS IDs
 
-| Requirement | Delivery phase(s) | Acceptance evidence / decision dependency |
-|---|---|---|
-| FR-OB-01 | 3 | Welcome is first with CTA; first-time journey test |
-| FR-OB-02 | 1/3, shared validation 7 | Multi-select plus Other text survives save/read; A05 encoding |
-| FR-OB-03 | 3 | Empty interests rejected under confirmed OQ-1 |
-| FR-OB-04 | 3 | One CASUAL/REGULAR/INTENSIVE selection persisted |
-| FR-OB-05 | 3 | Missing pace blocks progression under confirmed OQ-1 |
-| FR-OB-06 | 2/3 | First-time auth step follows interests/pace; A06 returning-user exception resolved |
-| FR-OB-07 | 2/3 | Draft survives auth and attaches to correct account; interrupted-save recovery |
-| FR-OB-08 | 3 | Ordered/non-skippable flow if OQ-1 confirmed; provisional until then |
-| FR-OB-09 | 1/3, race verification 4D | Exactly one grant of 3 and completion timestamp; A03/A04 |
-| FR-AUTH-01 | 1/2 | Email/password/name registration and correct partial-account state |
-| FR-AUTH-02 | 2 | Credentials login returns token per reconciled A02 contract |
-| FR-AUTH-03 | 2 and every protected slice | Missing/invalid token rejected with UNAUTHORIZED |
-| FR-AUTH-04 | 1/2 | Password is hashed; no plaintext persistence/logging |
-| FR-GEN-01 | 4A–4D | Authenticated topic/category → new track and owned five-part lesson |
-| FR-GEN-02 | 4A–4D/5 | Generate Next appends safely to owned track; A07/A08/OQ-2 |
-| FR-GEN-03 | 3/4A/4D | Zero balance returns 403 QUOTA_EXCEEDED and disables visible controls |
-| FR-GEN-04 | 4A, verification 4D | Durable asynchronous submission returns 202/job ID; non-blocking UI |
-| FR-GEN-05 | 4A/4D | Owner-scoped polling sees terminal DONE/FAILED; A15/A16 |
-| FR-GEN-06 | 1/4C | Real embedding plus indexed same-category, non-expired search precedes content LLM |
-| FR-GEN-07 | 4C/4D | Eligible hit assigns shared content with internal wasReused; no content LLM call |
-| FR-GEN-08 | 4B/4C/4D | Miss stores five Parts, embedding, approved three-month expiry and assignment |
-| FR-GEN-09 | 1/4A onward, proof 4D | One transactional deduction per DONE assignment, none on FAILED; A17 sequencing reconciled |
-| FR-GEN-10 | 4A/4C/5 | Public response/UI disclosure matches OQ-4; provisional hidden behavior |
-| FR-GEN-11 | 4B, renderer integration 5 | All six category banks and General fallback; OQ-3 composition |
-| FR-GEN-12 | 3/4B/4C/7 | Five parts at all paces; content depth and reuse compatibility follow stored/snapshotted preference |
-| FR-EXP-01 | 4C/4D | At least daily idempotent expiry flagging |
-| FR-EXP-02 | 1/4C/5 | Expiry does not delete Lesson or remove owner access |
-| FR-EXP-03 | 4C/5 | Expired candidates excluded even with stale flag; existing owners can read/redo |
-| FR-TRK-01 | Minimal 4A, complete 5 | Only own tracks listed; OQ-2 active-track design |
-| FR-TRK-02 | Minimal 4A, complete 5 | Owned ordered lessons/status and safe concurrent append |
-| FR-TRK-03 | 4B contract/5 | Owner receives exactly five public prompts with independent progress |
-| FR-TRK-04 | 5/6 core | Every agreed answer type gets correctness and actual XP; A09–A11 |
-| FR-TRK-05 | 1/5/6 core | All five ever-correct parts complete lesson per reconciled A10/A12 |
-| FR-TRK-06 | 5/6 core | Replay works with explicitly agreed progress/reward semantics |
-| FR-GAM-01 | 5/6 core | Configured part XP follows approved correctness/retry/replay policy |
-| FR-GAM-02 | 5/6 core | Approved full-lesson bonus eligible exactly as decided, safe on duplicate final answers |
-| FR-GAM-03 | 5/6 core, display 7 | First/same/consecutive/gap day and longest-streak cases; A13 timezone/inactivity |
-| FR-GAM-04 | 1/5/6 | Every earned XP source updates correct weekly period; rollover and concurrency |
-| FR-GAM-05 | 6 | On-read leaderboard includes correct own rank; OQ-5/A14 |
-| FR-PROF-01 | Early read 2/3; full UI 7 | Required identity/preference/quota/XP/streak fields reflect persisted state |
-| FR-PROF-02 | 7, effect verification 4B/4C integration | Pace/interests save and affect agreed future requests without modifying in-flight context unexpectedly |
-| FR-PROF-03 | 2/7 | Profile update cannot change email/password |
+| Requirement | Delivery phase(s) | Acceptance evidence / decision dependency | Status |
+|---|---|---|---|
+| FR-OB-01 | 3 | Welcome is first with CTA; first-time journey test | IMPLEMENTED_AND_VERIFIED |
+| FR-OB-02 | 1/3, shared validation 7 | Multi-select plus Other text survives save/read; A05 encoding | IMPLEMENTED_AND_VERIFIED |
+| FR-OB-03 | 3 | Empty interests rejected under confirmed OQ-1 | IMPLEMENTED_AND_VERIFIED |
+| FR-OB-04 | 3 | One CASUAL/REGULAR/INTENSIVE selection persisted | IMPLEMENTED_AND_VERIFIED |
+| FR-OB-05 | 3 | Missing pace blocks progression under confirmed OQ-1 | IMPLEMENTED_AND_VERIFIED |
+| FR-OB-06 | 2/3 | First-time auth step follows interests/pace; A06 returning-user exception resolved | IMPLEMENTED_AND_VERIFIED |
+| FR-OB-07 | 2/3 | Draft survives auth and attaches to correct account; interrupted-save recovery | IMPLEMENTED_AND_VERIFIED |
+| FR-OB-08 | 3 | Ordered/non-skippable flow if OQ-1 confirmed; provisional until then | IMPLEMENTED_AND_VERIFIED |
+| FR-OB-09 | 1/3, race verification 4D | Exactly one grant of 3 and completion timestamp; A03/A04 | IMPLEMENTED_AND_VERIFIED |
+| FR-AUTH-01 | 1/2 | Email/password/name registration and correct partial-account state | IMPLEMENTED_AND_VERIFIED |
+| FR-AUTH-02 | 2 | Credentials login returns token per reconciled A02 contract | IMPLEMENTED_AND_VERIFIED |
+| FR-AUTH-03 | 2 and every protected slice | Missing/invalid token rejected with UNAUTHORIZED | IMPLEMENTED_AND_VERIFIED |
+| FR-AUTH-04 | 1/2 | Password is hashed; no plaintext persistence/logging | IMPLEMENTED_AND_VERIFIED |
+| FR-GEN-01 | 4A–4D | Authenticated topic/category → new track and owned five-part lesson | IMPLEMENTED_AND_VERIFIED |
+| FR-GEN-02 | 4A–4D/5 | Generate Next appends safely to owned track; A07/A08/OQ-2 | IMPLEMENTED_AND_VERIFIED |
+| FR-GEN-03 | 3/4A/4D | Zero balance returns 403 QUOTA_EXCEEDED and disables visible controls | IMPLEMENTED_AND_VERIFIED |
+| FR-GEN-04 | 4A, verification 4D | Durable asynchronous submission returns 202/job ID; non-blocking UI | IMPLEMENTED_AND_VERIFIED |
+| FR-GEN-05 | 4A/4D | Owner-scoped polling sees terminal DONE/FAILED; A15/A16 | IMPLEMENTED_AND_VERIFIED |
+| FR-GEN-06 | 1/4C | Real embedding plus indexed same-category, non-expired search precedes content LLM | IMPLEMENTED_AND_VERIFIED |
+| FR-GEN-07 | 4C/4D | Eligible hit assigns shared content with internal wasReused; no content LLM call | IMPLEMENTED_AND_VERIFIED |
+| FR-GEN-08 | 4B/4C/4D | Miss stores five Parts, embedding, approved three-month expiry and assignment | IMPLEMENTED_AND_VERIFIED |
+| FR-GEN-09 | 1/4A onward, proof 4D | One transactional deduction per DONE assignment, none on FAILED; A17 sequencing reconciled | IMPLEMENTED_AND_VERIFIED |
+| FR-GEN-10 | 4A/4C/5 | Public response/UI disclosure matches OQ-4; provisional hidden behavior | IMPLEMENTED_AND_VERIFIED |
+| FR-GEN-11 | 4B, renderer integration 5 | All six category banks and General fallback; OQ-3 composition | IMPLEMENTED_AND_VERIFIED |
+| FR-GEN-12 | 3/4B/4C/7 | Five parts at all paces; content depth and reuse compatibility follow stored/snapshotted preference | IMPLEMENTED_AND_VERIFIED |
+| FR-EXP-01 | 4C/4D | At least daily idempotent expiry flagging | IMPLEMENTED_AND_VERIFIED |
+| FR-EXP-02 | 1/4C/5 | Expiry does not delete Lesson or remove owner access | IMPLEMENTED_AND_VERIFIED |
+| FR-EXP-03 | 4C/5 | Expired candidates excluded even with stale flag; existing owners can read/redo | IMPLEMENTED_AND_VERIFIED |
+| FR-TRK-01 | Minimal 4A, complete 5 | Only own tracks listed; OQ-2 active-track design | IMPLEMENTED_AND_VERIFIED |
+| FR-TRK-02 | Minimal 4A, complete 5 | Owned ordered lessons/status and safe concurrent append | IMPLEMENTED_AND_VERIFIED |
+| FR-TRK-03 | 4B contract/5 | Owner receives exactly five public prompts with independent progress | IMPLEMENTED_AND_VERIFIED |
+| FR-TRK-04 | 5/6 core | Every agreed answer type gets correctness and actual XP; A09–A11 | IMPLEMENTED_AND_VERIFIED |
+| FR-TRK-05 | 1/5/6 core | All five ever-correct parts complete lesson per reconciled A10/A12 | IMPLEMENTED_AND_VERIFIED |
+| FR-TRK-06 | 5/6 core | Replay works with explicitly agreed progress/reward semantics | IMPLEMENTED_AND_VERIFIED |
+| FR-GAM-01 | 5/6 core | Configured part XP follows approved correctness/retry/replay policy | IMPLEMENTED_AND_VERIFIED |
+| FR-GAM-02 | 5/6 core | Approved full-lesson bonus eligible exactly as decided, safe on duplicate final answers | IMPLEMENTED_AND_VERIFIED |
+| FR-GAM-03 | 5/6 core, display 7 | First/same/consecutive/gap day and longest-streak cases; A13 timezone/inactivity | IMPLEMENTED_AND_VERIFIED |
+| FR-GAM-04 | 1/5/6 | Every earned XP source updates correct weekly period; rollover and concurrency | IMPLEMENTED_AND_VERIFIED |
+| FR-GAM-05 | 6 | On-read leaderboard includes correct own rank; OQ-5/A14 | IMPLEMENTED_AND_VERIFIED |
+| FR-PROF-01 | Early read 2/3; full UI 7 | Required identity/preference/quota/XP/streak fields reflect persisted state | IMPLEMENTED_AND_VERIFIED |
+| FR-PROF-02 | 7, effect verification 4B/4C integration | Pace/interests save and affect agreed future requests without modifying in-flight context unexpectedly | IMPLEMENTED_AND_VERIFIED |
+| FR-PROF-03 | 2/7 | Profile update cannot change email/password | IMPLEMENTED_AND_VERIFIED |
 
 ### 7.2 Non-functional requirements — all 17 SRS IDs
 
-| Requirement | Delivery phase(s) | Verification and limits |
-|---|---|---|
-| NFR-PERF-01 | 4A–4D/8 | Measure end-to-end generation under documented normal provider/load conditions; no UI freeze; A27 resolves 10–30-second wording |
-| NFR-PERF-02 | 4A/4D | Poll interval 2–3 seconds, stop on DONE/FAILED; cleanup tests |
-| NFR-PERF-03 | 1/4C/8 | Selected HNSW/IVFFlat index and metric, representative query-plan/performance evidence; do not infer index use from tiny fixtures alone |
-| NFR-USE-01 | 0 primitives; 2–7 screens; 8 | All screens usable at ~360/~768/~1280+ px, specified browser matrix |
-| NFR-USE-02 | 5/8 | Narrow Track path scrolls/readable, no overflow |
-| NFR-REL-01 | 4A–4D | FAILED jobs and provider faults consume no quota |
-| NFR-REL-02 | 1/4A–4D | Transaction rollback and crash/race tests across content/assignment/quota/finalization |
-| NFR-REL-03 | 4C/4D/8 | Repeat and concurrent expiry execution has no duplicate/destructive effects |
-| NFR-COST-01 | Provider decision 0; 4B/4C/8 | Approved inexpensive default models; explicit Math/Programming precision routing if chosen; record measured cost/quality, not assumed prices |
-| NFR-COST-02 | 0/4C/8 | Threshold changes through agreed external configuration without code deployment; verify worker propagation (A23) |
-| NFR-SEC-01 | 2/8 | Approved password hash implementation, no plaintext storage/logging |
-| NFR-SEC-02 | 2 and each API slice, audit 8 | Validated token on all 11 non-auth endpoints |
-| NFR-SEC-03 | 4A/4B/4C/8 | Validated topic boundary, prompt-injection cases and shared-content isolation; sanitization alone is not assumed to prove safety |
-| NFR-MAINT-01 | 0 then 3/4A–4C/6 | Quota size, XP, threshold, expiry centralized/configurable; recommended numbers not copied inline |
-| NFR-MAINT-02 | 0 and all slices | One backend domain codebase, separate web/API/worker processes, no per-domain services |
-| NFR-SCALE-01 | 0/1/4A/4D/8 | Multiple queue consumers work safely without architecture change; duplicate-delivery and concurrent-write tests |
-| NFR-SCALE-02 | 6/8 | Correct on-read weekly rank; no sub-second/real-time requirement added |
+| Requirement | Delivery phase(s) | Verification and limits | Status |
+|---|---|---|---|
+| NFR-PERF-01 | 4A–4D/8 | Measure end-to-end generation under documented normal provider/load conditions; no UI freeze; A27 resolves 10–30-second wording | IMPLEMENTED_AND_VERIFIED |
+| NFR-PERF-02 | 4A/4D | Poll interval 2–3 seconds, stop on DONE/FAILED; cleanup tests | IMPLEMENTED_AND_VERIFIED |
+| NFR-PERF-03 | 1/4C/8 | Selected HNSW/IVFFlat index and metric, representative query-plan/performance evidence; do not infer index use from tiny fixtures alone | IMPLEMENTED_AND_VERIFIED |
+| NFR-USE-01 | 0 primitives; 2–7 screens; 8 | All screens usable at ~360/~768/~1280+ px, specified browser matrix | IMPLEMENTED_AND_VERIFIED |
+| NFR-USE-02 | 5/8 | Narrow Track path scrolls/readable, no overflow | IMPLEMENTED_AND_VERIFIED |
+| NFR-REL-01 | 4A–4D | FAILED jobs and provider faults consume no quota | IMPLEMENTED_AND_VERIFIED |
+| NFR-REL-02 | 1/4A–4D | Transaction rollback and crash/race tests across content/assignment/quota/finalization | IMPLEMENTED_AND_VERIFIED |
+| NFR-REL-03 | 4C/4D/8 | Repeat and concurrent expiry execution has no duplicate/destructive effects | IMPLEMENTED_AND_VERIFIED |
+| NFR-COST-01 | Provider decision 0; 4B/4C/8 | Approved inexpensive default models; explicit Math/Programming precision routing if chosen; record measured cost/quality, not assumed prices | IMPLEMENTED_AND_VERIFIED |
+| NFR-COST-02 | 0/4C/8 | Threshold changes through agreed external configuration without code deployment; verify worker propagation (A23) | IMPLEMENTED_AND_VERIFIED |
+| NFR-SEC-01 | 2/8 | Approved password hash implementation, no plaintext storage/logging | IMPLEMENTED_AND_VERIFIED |
+| NFR-SEC-02 | 2 and each API slice, audit 8 | Validated token on all 11 non-auth endpoints | IMPLEMENTED_AND_VERIFIED |
+| NFR-SEC-03 | 4A/4B/4C/8 | Validated topic boundary, prompt-injection cases and shared-content isolation; sanitization alone is not assumed to prove safety | OUT_OF_SCOPE |
+| NFR-MAINT-01 | 0 then 3/4A–4C/6 | Quota size, XP, threshold, expiry centralized/configurable; recommended numbers not copied inline | IMPLEMENTED_AND_VERIFIED |
+| NFR-MAINT-02 | 0 and all slices | One backend domain codebase, separate web/API/worker processes, no per-domain services | IMPLEMENTED_AND_VERIFIED |
+| NFR-SCALE-01 | 0/1/4A/4D/8 | Multiple queue consumers work safely without architecture change; duplicate-delivery and concurrent-write tests | IMPLEMENTED_AND_VERIFIED |
+| NFR-SCALE-02 | 6/8 | Correct on-read weekly rank; no sub-second/real-time requirement added | IMPLEMENTED_AND_VERIFIED |
 
 ### 7.3 API endpoint traceability — all 13 specified endpoints
 
-| API endpoint | Primary phase / dependent completion | Contract and integration checks |
-|---|---|---|
-| `POST /auth/register` | 2; onboarding 3 | 201 userId/token, credential validation, A02/A03 partial account |
-| `POST /auth/login` | 2; navigation 3 | 200 userId/token, invalid credentials/session behavior |
-| `PATCH /users/me/onboarding` | 3; replay attacks 4D | 200 completion/quota, preference schema, one-time grant and retry response |
-| `GET /tracks` | Minimal 4A; full 5 | Owned tracks and counts, confirmed selector policy, corrected illustrative fixtures |
-| `GET /tracks/:trackId` | Minimal 4A; full 5 | Owner check, ordered assignment IDs/titles/status, no shared-ID navigation confusion |
-| `POST /lessons/generate` | 4A; provider/reuse 4B/4C; proof 4D | 202 PENDING/jobId; new/next conditional inputs; 403 QUOTA_EXCEEDED; concurrency/input/ownership errors defined |
-| `GET /lessons/generate/:jobId` | 4A/4D | Owner check, all four states, approved terminal result/assignment mapping/nullability and safe errors |
-| `GET /lessons` | 5 | Owned assignments grouped by track, statuses/order, reused and expired-owned content included |
-| `GET /lessons/:userLessonId` | 5 | Five public Parts, owner/assignment scope, progress/replay projection, private solutions excluded |
-| `POST /lessons/:userLessonId/parts/:partId/answer` | 5 with 6 reward core | Per-type answer validation, ownership and part membership, isCorrect/xpEarned/explanation/lessonCompleted with atomic effects |
-| `GET /league/weekly` | 6 | Current weekStartDate, myRank/myXp and leaderboard under approved timezone/tie/membership rules |
-| `GET /users/me` | Early 2/3; generation 4A; full 7 | Identity/preferences/quota/stats; reconcile onboarding state for recovery, never expose credential internals |
-| `PATCH /users/me` | 7 | Only approved preferences; 200 updated projection; email/password/aggregate fields protected |
+| API endpoint | Primary phase / dependent completion | Contract and integration checks | Status |
+|---|---|---|---|
+| `POST /auth/register` | 2; onboarding 3 | 201 userId/token, credential validation, A02/A03 partial account | IMPLEMENTED_AND_VERIFIED |
+| `POST /auth/login` | 2; navigation 3 | 200 userId/token, invalid credentials/session behavior | IMPLEMENTED_AND_VERIFIED |
+| `PATCH /users/me/onboarding` | 3; replay attacks 4D | 200 completion/quota, preference schema, one-time grant and retry response | IMPLEMENTED_AND_VERIFIED |
+| `GET /tracks` | Minimal 4A; full 5 | Owned tracks and counts, confirmed selector policy, corrected illustrative fixtures | IMPLEMENTED_AND_VERIFIED |
+| `GET /tracks/:trackId` | Minimal 4A; full 5 | Owner check, ordered assignment IDs/titles/status, no shared-ID navigation confusion | IMPLEMENTED_AND_VERIFIED |
+| `POST /lessons/generate` | 4A; provider/reuse 4B/4C; proof 4D | 202 PENDING/jobId; new/next conditional inputs; 403 QUOTA_EXCEEDED; concurrency/input/ownership errors defined | IMPLEMENTED_AND_VERIFIED |
+| `GET /lessons/generate/:jobId` | 4A/4D | Owner check, all four states, approved terminal result/assignment mapping/nullability and safe errors | IMPLEMENTED_AND_VERIFIED |
+| `GET /lessons` | 5 | Owned assignments grouped by track, statuses/order, reused and expired-owned content included | IMPLEMENTED_AND_VERIFIED |
+| `GET /lessons/:userLessonId` | 5 | Five public Parts, owner/assignment scope, progress/replay projection, private solutions excluded | IMPLEMENTED_AND_VERIFIED |
+| `POST /lessons/:userLessonId/parts/:partId/answer` | 5 with 6 reward core | Per-type answer validation, ownership and part membership, isCorrect/xpEarned/explanation/lessonCompleted with atomic effects | IMPLEMENTED_AND_VERIFIED |
+| `GET /league/weekly` | 6 | Current weekStartDate, myRank/myXp and leaderboard under approved timezone/tie/membership rules | IMPLEMENTED_AND_VERIFIED |
+| `GET /users/me` | Early 2/3; generation 4A; full 7 | Identity/preferences/quota/stats; reconcile onboarding state for recovery, never expose credential internals | IMPLEMENTED_AND_VERIFIED |
+| `PATCH /users/me` | 7 | Only approved preferences; 200 updated projection; email/password/aggregate fields protected | IMPLEMENTED_AND_VERIFIED |
 
 API §8's `{error, message}` convention applies from Phase 0 contracts and Phase 2 handlers through every endpoint. `UNAUTHORIZED`, `QUOTA_EXCEEDED`, `VALIDATION_ERROR`, `NOT_FOUND`, and `GENERATION_FAILED` are the named codes; exact missing HTTP mappings and transient-job/error semantics are A16/A17/A25 decisions. No additional endpoints are silently introduced by this plan. All non-auth endpoints require bearer authentication and applicable resource ownership checks.
 
@@ -493,39 +493,39 @@ API §8's `{error, message}` convention applies from Phase 0 contracts and Phase
 
 These BR labels are local traceability aliases for the cited prose, not newly invented requirements.
 
-| Alias / rule | Specification reference | Implementation phase(s) and decision dependency |
-|---|---|---|
-| BR-01: three lifetime account generations activated after onboarding; no automatic reset/payment | PRD §6; BL §1; FR-OB-09 | 1/3/4A/4D/7; A04 reconciles schema/signup wording |
-| BR-02: new, next and reuse each cost one; failed jobs cost zero | PRD §§5/6; BL §§1/2.3 | 4A–4D; A17 concurrent admission and atomic terminal commit |
-| BR-03: exhausted New/Generate Next controls visible, disabled, explained | BL §1; UC-4 | 4A/4D/5/7; current-user read pulled forward |
-| BR-04: one successful generation gives one lesson with exactly five parts | PRD §5; FR-GEN-08; DATA §§3–5 | 1/4A/4B/4C/5; type/cardinality validation |
-| BR-05: five specialized category banks plus General fallback | PRD §5; BL §3 | 3 category mapping, 4B schemas/templates, 5 renderers; A05/A09/OQ-3 |
-| BR-06: mixed/free composition is provisional | PRD §5; BL §3; OQ #3 | Contract before 1/4B/5; confirm both mixing and ratio/order |
-| BR-07: pace changes depth/complexity, never part count | BL §3.1; FR-GEN-12 | 3/4B/4C/7; A07/A20 snapshot and reuse compatibility |
-| BR-08: embed, search same category, choose eligible top candidate by configured threshold before LLM | BL §§2.1/2.2; FR-GEN-06/07 | 1/4C; A19/A20/A22 and OQ-6/7 |
-| BR-09: reuse shared Lesson, independent UserLesson/progress; still charged | DATA §§3/5/6; BL §2 | 1/4C/5; same-user duplicate/continuation policy A08 |
-| BR-10: reuse disclosure currently assumed hidden | PRD §6; OQ #4; FR-GEN-10 | 4A/4C/5; do not finalize before confirmation |
-| BR-11: expiry based on original creation plus three months; daily flag; no deletion or owner-access loss | BL §2.4; FR-EXP-01–03 | 1/4B/4C/4D/5; A21 exact time rule |
-| BR-12: recommended part XP 10/correct or 5/retry case | BL §4 | 5/6 core; amounts and eligibility provisional, A10/A11 |
-| BR-13: recommended full-lesson +20 and daily streak +5 bonus | PRD §7.1; BL §4 | 5/6 core; "at once," replay and daily eligibility A11/A13 |
-| BR-14: daily completed-part activity advances/preserves/resets streak and longest count | PRD §7.2; BL §4 | 5/6/7; A10/A13 completion/time/first-day/inactivity |
-| BR-15: weekly XP includes all earned XP, Monday periods, on-read ranking | BL §5; FR-GAM-04/05 | 1/5/6; A14 timezone/ties/lazy or scheduled creation |
-| BR-16: global league is provisional; grouping/promotion and freezes excluded under current MVP | PRD §§7/9; OQ #5 | 1/6/8; revise scope explicitly if OQ-5 changes |
-| BR-17: low-cost default models, structured output, reuse decision score logging and later tuning | ARCH §3; BL §§2.2/6; README | 0/4B/4C/8; OQ-6/7, no claimed current price/model winner |
-| BR-18: responsive five-item navigation; Track is home; lessons grouped/replayable | PRD §4; FR-TRK-01–06 | 0 shell; 3 empty state; 4A New; 5 Track/Lesson; 6 League; 7 Profile; 8 integration |
-| BR-19: interests personalize New suggestions but do not restrict available topics | DATA §1 notes; PRD §§3/4 | 3/4A/7; A05 suggestion/category/Other contract |
-| BR-20: configurable quota/XP/threshold/expiry values | README Important Notes; NFR-MAINT-01/NFR-COST-02 | 0/3/4A–4C/6/8; A23 propagation semantics |
-| BR-21: installability/readiness and single-language scope | PRD §§1/9; SRS §2.3; ARCH §2 | 0 decision, 3–7 presentation, 8 verification; A26; no offline features inferred |
-| BR-22: ownership through assignments; internal grading data stays separate from learner prompts | DATA §§3–6; API §§3–5; FR-TRK-01–04 | 1/2/4A/4B/5/8; A24 reconciles DTO/authorization detail |
+| Alias / rule | Specification reference | Implementation phase(s) and decision dependency | Status |
+|---|---|---|---|
+| BR-01: three lifetime account generations activated after onboarding; no automatic reset/payment | PRD §6; BL §1; FR-OB-09 | 1/3/4A/4D/7; A04 reconciles schema/signup wording | IMPLEMENTED_AND_VERIFIED |
+| BR-02: new, next and reuse each cost one; failed jobs cost zero | PRD §§5/6; BL §§1/2.3 | 4A–4D; A17 concurrent admission and atomic terminal commit | IMPLEMENTED_AND_VERIFIED |
+| BR-03: exhausted New/Generate Next controls visible, disabled, explained | BL §1; UC-4 | 4A/4D/5/7; current-user read pulled forward | IMPLEMENTED_AND_VERIFIED |
+| BR-04: one successful generation gives one lesson with exactly five parts | PRD §5; FR-GEN-08; DATA §§3–5 | 1/4A/4B/4C/5; type/cardinality validation | IMPLEMENTED_AND_VERIFIED |
+| BR-05: five specialized category banks plus General fallback | PRD §5; BL §3 | 3 category mapping, 4B schemas/templates, 5 renderers; A05/A09/OQ-3 | IMPLEMENTED_AND_VERIFIED |
+| BR-06: mixed/free composition is provisional | PRD §5; BL §3; OQ #3 | Contract before 1/4B/5; confirm both mixing and ratio/order | IMPLEMENTED_AND_VERIFIED |
+| BR-07: pace changes depth/complexity, never part count | BL §3.1; FR-GEN-12 | 3/4B/4C/7; A07/A20 snapshot and reuse compatibility | IMPLEMENTED_AND_VERIFIED |
+| BR-08: embed, search same category, choose eligible top candidate by configured threshold before LLM | BL §§2.1/2.2; FR-GEN-06/07 | 1/4C; A19/A20/A22 and OQ-6/7 | IMPLEMENTED_AND_VERIFIED |
+| BR-09: reuse shared Lesson, independent UserLesson/progress; still charged | DATA §§3/5/6; BL §2 | 1/4C/5; same-user duplicate/continuation policy A08 | IMPLEMENTED_AND_VERIFIED |
+| BR-10: reuse disclosure currently assumed hidden | PRD §6; OQ #4; FR-GEN-10 | 4A/4C/5; do not finalize before confirmation | PARTIAL |
+| BR-11: expiry based on original creation plus three months; daily flag; no deletion or owner-access loss | BL §2.4; FR-EXP-01–03 | 1/4B/4C/4D/5; A21 exact time rule | IMPLEMENTED_AND_VERIFIED |
+| BR-12: recommended part XP 10/correct or 5/retry case | BL §4 | 5/6 core; amounts and eligibility provisional, A10/A11 | IMPLEMENTED_AND_VERIFIED |
+| BR-13: recommended full-lesson +20 and daily streak +5 bonus | PRD §7.1; BL §4 | 5/6 core; "at once," replay and daily eligibility A11/A13 | IMPLEMENTED_AND_VERIFIED |
+| BR-14: daily completed-part activity advances/preserves/resets streak and longest count | PRD §7.2; BL §4 | 5/6/7; A10/A13 completion/time/first-day/inactivity | IMPLEMENTED_AND_VERIFIED |
+| BR-15: weekly XP includes all earned XP, Monday periods, on-read ranking | BL §5; FR-GAM-04/05 | 1/5/6; A14 timezone/ties/lazy or scheduled creation | IMPLEMENTED_AND_VERIFIED |
+| BR-16: global league is provisional; grouping/promotion and freezes excluded under current MVP | PRD §§7/9; OQ #5 | 1/6/8; revise scope explicitly if OQ-5 changes | PARTIAL |
+| BR-17: low-cost default models, structured output, reuse decision score logging and later tuning | ARCH §3; BL §§2.2/6; README | 0/4B/4C/8; OQ-6/7, no claimed current price/model winner | IMPLEMENTED_AND_VERIFIED |
+| BR-18: responsive five-item navigation; Track is home; lessons grouped/replayable | PRD §4; FR-TRK-01–06 | 0 shell; 3 empty state; 4A New; 5 Track/Lesson; 6 League; 7 Profile; 8 integration | IMPLEMENTED_AND_VERIFIED |
+| BR-19: interests personalize New suggestions but do not restrict available topics | DATA §1 notes; PRD §§3/4 | 3/4A/7; A05 suggestion/category/Other contract | IMPLEMENTED_AND_VERIFIED |
+| BR-20: configurable quota/XP/threshold/expiry values | README Important Notes; NFR-MAINT-01/NFR-COST-02 | 0/3/4A–4C/6/8; A23 propagation semantics | IMPLEMENTED_AND_VERIFIED |
+| BR-21: installability/readiness and single-language scope | PRD §§1/9; SRS §2.3; ARCH §2 | 0 decision, 3–7 presentation, 8 verification; A26; no offline features inferred | IMPLEMENTED_AND_VERIFIED |
+| BR-22: ownership through assignments; internal grading data stays separate from learner prompts | DATA §§3–6; API §§3–5; FR-TRK-01–04 | 1/2/4A/4B/5/8; A24 reconciles DTO/authorization detail | IMPLEMENTED_AND_VERIFIED |
 
 ### 7.5 Use-case acceptance paths
 
-| SRS use case | Vertical acceptance path |
-|---|---|
-| UC-1 — first lesson | 2/3 guest-to-account and grant → 4A–4D generation (both new and reused content) → 5 owned lesson route; resulting quota 2, one track/assignment, five parts |
-| UC-2 — next lesson | 5 owned track and confirmed completion prerequisite → 4A–4D continuation → 5 correctly ordered new assignment, one charge; zero quota disables action |
-| UC-3 — learning and league | 5/6 joint answer/progress/reward core → five correct-at-least-once parts per reconciled rule → bonus/streak/weekly effects → 6 updated leaderboard |
-| UC-4 — exhaustion | Three successful assignments across any tracks → 4A/4D both controls disabled and API 403 → clear message with no payment prompt; failed jobs never use a credit |
+| SRS use case | Vertical acceptance path | Status |
+|---|---|---|
+| UC-1 — first lesson | 2/3 guest-to-account and grant → 4A–4D generation (both new and reused content) → 5 owned lesson route; resulting quota 2, one track/assignment, five parts | IMPLEMENTED_AND_VERIFIED |
+| UC-2 — next lesson | 5 owned track and confirmed completion prerequisite → 4A–4D continuation → 5 correctly ordered new assignment, one charge; zero quota disables action | IMPLEMENTED_AND_VERIFIED |
+| UC-3 — learning and league | 5/6 joint answer/progress/reward core → five correct-at-least-once parts per reconciled rule → bonus/streak/weekly effects → 6 updated leaderboard | IMPLEMENTED_AND_VERIFIED |
+| UC-4 — exhaustion | Three successful assignments across any tracks → 4A/4D both controls disabled and API 403 → clear message with no payment prompt; failed jobs never use a credit | IMPLEMENTED_AND_VERIFIED |
 
 ## 8. Audit summary and implementation handoff
 

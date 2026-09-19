@@ -90,7 +90,7 @@ export default function ProfilePage() {
     setMessage({ text: '', type: '' });
 
     try {
-      const updatedProfile = await apiFetch('/users/me', {
+      const updatedProfile = await apiFetch<any>('/users/me', {
         method: 'PATCH',
         body: JSON.stringify({
           pace: selectedPace,
