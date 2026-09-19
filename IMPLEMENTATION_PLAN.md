@@ -218,7 +218,7 @@ Paths are illustrative allocations following ARCH §5. They do not select an ORM
 - **Explicit non-goals:** Guessing missing preferences, adding payments/groups contrary to scope, automatic data imports, deleting expired lessons, selecting replay restrictions through an accidental uniqueness constraint.
 - **Unresolved decisions affecting phase:** OQ-1/2/3/5/6/7; A03–A05/A07–A22/A28. A02 affects credential/session storage. A01 governs readiness.
 
-### Phase 2 — Authentication
+### [x] Phase 2 — Authentication
 
 - **Objective:** Deliver email/password registration and login with token-protected backend access and the early current-user read needed by later flows.
 - **Specification references:** SRS FR-AUTH-01–04, NFR-SEC-01/02; PRD §3; ARCH §2; DATA §1; API introduction, §§1/7/8.
@@ -233,7 +233,7 @@ Paths are illustrative allocations following ARCH §5. They do not select an ORM
 - **Explicit non-goals:** OAuth, social login, email verification, password reset, email/password edit APIs, or logout/refresh endpoints unless separately specified during contract resolution. Do not silently replace bearer auth with an incompatible browser-only session flow.
 - **Unresolved decisions affecting phase:** OQ-1; A02–A06/A24/A25. Additional auth lifecycle behavior must be settled rather than inferred from a library default.
 
-### Phase 3 — Onboarding
+### [x] Phase 3 — Onboarding
 
 - **Objective:** Deliver the first complete account journey: collect preferences before registration, persist them after authentication, and activate the lifetime grant once.
 - **Specification references:** PRD §§3/6; SRS FR-OB-01–09, UC-1; DATA §1; BL §1; API §2; OQ #1.

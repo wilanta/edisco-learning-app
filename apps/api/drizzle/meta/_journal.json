@@ -15,6 +15,13 @@
       "when": 1789789824867,
       "tag": "0001_progress_relationships",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789805902942,
+      "tag": "0002_secret_gorgon",
+      "breakpoints": true
     }
   ]
 }
