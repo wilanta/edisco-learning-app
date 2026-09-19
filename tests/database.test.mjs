@@ -71,7 +71,7 @@ test('persistence migrations and relational integrity', async (t) => {
       ]);
       assert.equal(
         (await query('SELECT * FROM drizzle.__drizzle_migrations')).rowCount,
-        3,
+        6,
       );
       assert.equal(
         (await query("SELECT * FROM pg_extension WHERE extname = 'vector'"))
@@ -89,7 +89,7 @@ test('persistence migrations and relational integrity', async (t) => {
       assert.equal(
         (await query("SELECT * FROM pg_indexes WHERE schemaname = 'public'"))
           .rowCount,
-        25,
+        26,
       );
     },
   );
@@ -123,7 +123,7 @@ test('persistence migrations and relational integrity', async (t) => {
     category: 'PROGRAMMING',
     title: 'Variables',
     description: 'Smoke fixture',
-    embedding: [1, 0, 0],
+    embedding: Array.from({ length: 1536 }, (_, i) => (i === 0 ? 1 : 0)),
     generatedByUserId: alice.id,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     expiresAt: new Date('2026-04-01T00:00:00Z'),
@@ -132,7 +132,11 @@ test('persistence migrations and relational integrity', async (t) => {
     .insert(schema.lessons)
     .values([
       lessonValues,
-      { ...lessonValues, title: 'Other lesson', embedding: [0, 1] },
+      {
+        ...lessonValues,
+        title: 'Other lesson',
+        embedding: Array.from({ length: 1536 }, (_, i) => (i === 1 ? 1 : 0)),
+      },
     ])
     .returning();
   const parts = await db
@@ -217,8 +221,9 @@ test('persistence migrations and relational integrity', async (t) => {
       assert.ok(alice.updatedAt instanceof Date);
       assert.equal(lesson.contentVersion, 1);
       assert.equal(lesson.isExpiredForReuse, false);
-      assert.deepEqual(lesson.embedding, [1, 0, 0]);
-      assert.deepEqual(otherLesson.embedding, [0, 1]); // Dimension is deliberately deferred.
+      assert.deepEqual(lesson.embedding, lessonValues.embedding);
+      assert.equal(otherLesson.embedding.length, 1536);
+      assert.equal(otherLesson.embedding[1], 1);
       assert.equal(parts[0].promptContent.correctAnswer, 'a');
       assert.equal(aliceProgress.xpEarned, 10);
       assert.equal(bobProgress.attempts, 0);
@@ -272,6 +277,11 @@ test('persistence migrations and relational integrity', async (t) => {
     async () => {
       for (const [sql, values, code] of [
         [
+          'UPDATE lessons SET embedding = $1 WHERE id = $2',
+          ['[1,0]', lesson.id],
+          '22000',
+        ],
+        [
           'UPDATE users SET email = $1 WHERE id = $2',
           [alice.email, bob.id],
           '23505',
@@ -313,11 +323,6 @@ test('persistence migrations and relational integrity', async (t) => {
           'UPDATE user_part_progress SET xp_earned = -1 WHERE id = $1',
           [aliceProgress.id],
           '23514',
-        ],
-        [
-          'UPDATE lessons SET embedding = NULL WHERE id = $1',
-          [lesson.id],
-          '23502',
         ],
         [
           'UPDATE lessons SET expires_at = NULL WHERE id = $1',

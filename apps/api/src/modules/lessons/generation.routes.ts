@@ -13,7 +13,14 @@ import { z } from 'zod';
 
 const inputSchema = z
   .object({
-    topic: z.string().trim().min(1).optional(),
+    topic: z
+      .string()
+      .trim()
+      .min(1)
+      .max(2000)
+      // biome-ignore lint/suspicious/noControlCharactersInRegex: Reject controls while allowing tab/newline in topic text.
+      .regex(/^[^\x00-\x08\x0b\x0c\x0e-\x1f\x7f]*$/)
+      .optional(),
     category: z.enum(category.enumValues),
     trackId: z.uuid().optional(),
   })
@@ -107,10 +114,13 @@ const generationRoutes: FastifyPluginAsync = async (app) => {
         }
         topic ??= track.title;
       }
-      if (process.env.GENERATION_PLACEHOLDER_ENABLED !== 'true') {
+      if (
+        (process.env.GENERATION_PLACEHOLDER_ENABLED === 'true') ===
+        (process.env.GENERATION_LLM_ENABLED === 'true')
+      ) {
         return reply.code(503).send({
           error: 'GENERATION_FAILED',
-          message: 'Generation placeholder is disabled',
+          message: 'Enable exactly one generation mode',
         });
       }
       const [job] = await app.db

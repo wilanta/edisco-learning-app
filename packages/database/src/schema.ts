@@ -2,7 +2,6 @@ import { sql } from 'drizzle-orm';
 import {
   boolean,
   check,
-  customType,
   date,
   foreignKey,
   index,
@@ -14,6 +13,7 @@ import {
   timestamp,
   unique,
   uuid,
+  vector,
 } from 'drizzle-orm/pg-core';
 
 export const pace = pgEnum('pace', ['CASUAL', 'REGULAR', 'INTENSIVE']);
@@ -46,13 +46,7 @@ export const generationStatus = pgEnum('generation_status', [
   'FAILED',
 ]);
 
-// ponytail: dimensionless until Phase 4C selects the model; add vector(N)
-// and its compatible search index in that phase's migration.
-const embedding = customType<{ data: number[]; driverData: string }>({
-  dataType: () => 'vector',
-  toDriver: (value) => JSON.stringify(value),
-  fromDriver: (value) => JSON.parse(value) as number[],
-});
+export const EMBEDDING_DIMENSIONS = 1536;
 
 export const users = pgTable(
   'users',
@@ -116,7 +110,11 @@ export const lessons = pgTable(
     category: category().notNull(),
     title: text().notNull(),
     description: text().notNull(),
-    embedding: embedding().notNull(),
+    // Legacy content remains owned/readable; only compatible vectors are reused.
+    embedding: vector({ dimensions: EMBEDDING_DIMENSIONS }),
+    embeddingProfile: text('embedding_profile'),
+    generationPace: pace('generation_pace'),
+    generationContext: text('generation_context'),
     contentVersion: integer('content_version').notNull().default(1),
     generatedByUserId: uuid('generated_by_user_id')
       .notNull()
@@ -134,6 +132,10 @@ export const lessons = pgTable(
     index('lessons_generator_idx').on(t.generatedByUserId),
     index('lessons_topic_category_idx').on(t.trackTemplateTopic, t.category),
     index('lessons_expiry_idx').on(t.expiresAt),
+    index('lessons_embedding_hnsw_idx').using(
+      'hnsw',
+      t.embedding.op('vector_cosine_ops'),
+    ),
   ],
 );
 

@@ -1,6 +1,6 @@
 # Edisco Implementation Plan and Specification Audit
 
-Status: Phases 0–3 exist in the committed repository. The user-authorized Phase 4A infrastructure-only scope is complete, verified on 2026-09-19; see its delivery record in Section 6. Phase 4B has not started. The original audit remains relevant: real content, durable DB/queue recovery, atomic quota finalization, vector model/index, and other unresolved product decisions are not delivered by the placeholder pipeline.
+Status: Phases 0–4A exist in the committed repository. The user-authorized Phase 4B and 4C implementations are complete in the working tree, verified with mocked OpenAI responses on 2026-09-19; live-provider quality/latency/cost evaluation and operational similarity-threshold tuning remain outstanding. See the delivery records in Section 6. Durable DB/queue recovery, quota finalization, and unresolved product decisions remain release gates. Phase 4D has not started.
 
 ## 1. Scope, sources, and readiness
 
@@ -274,6 +274,19 @@ The original broader plan below remains a record of deferred requirements, not a
 
 ### Phase 4B — LLM Generation
 
+**Delivery status: COMPLETE for the explicitly authorized Phase 4B implementation scope (2026-09-19).** Live-provider acceptance is not claimed: no real API key was configured. Original broader acceptance criteria below remain release gates where noted.
+
+- **Authorizations:** user selected OpenAI and delegated small structured-output model selection; default is `gpt-4o-mini-2024-07-18`. User explicitly approved persisting real lessons with nullable embeddings. OQ-6 is resolved for content generation only.
+- **Implemented:** native-fetch Responses integration with strict JSON Schema and independent Zod validation; all seven named private Part types; six category templates; five ordered parts with varied types; pace instructions; bounded topic validation and untrusted-data separation.
+- **Persistence:** migration `0003_nullable_lesson_embedding.sql` drops embedding NOT NULL without fake vectors. One transaction creates any new Track, Lesson, five Parts, owned NOT_STARTED UserLesson, and DONE result IDs.
+- **Validation executed:** `npm test`: 36+ passed, with real PostgreSQL/Redis and separate workers, mocking only OpenAI.
+- **Remaining gates:** controlled live evaluation when credentials are available. Mandatory reuse routing belongs to 4C. Quota charging remains later work.
+
+**Next action:** Begin Phase 4C only when explicitly instructed.
+
+Original specification analysis and broader acceptance criteria:
+
+
 - **Objective:** Implement the validated content-generation branch for an explicit cache miss, with five category-appropriate parts and pace-adjusted depth.
 - **Specification references:** PRD §§5/8; ARCH §3; DATA §§3/4; BL §§3/3.1/6; SRS FR-GEN-08/11/12, NFR-COST-01, NFR-SEC-03; OQ #3/6.
 - **Dependencies:** Phase 4A safe pipeline/finalization; G3 content and grading contracts; provider/model selected under OQ-6; OQ-3 composition decision. Continuation context and input/pace snapshots must be specified. Real semantic routing arrives in 4C.
@@ -289,6 +302,20 @@ The original broader plan below remains a record of deferred requirements, not a
 
 ### Phase 4C — Embedding & Semantic Reuse
 
+**Delivery status: COMPLETE for the specified Phase 4C implementation scope (2026-09-19).** Live semantic quality and operational similarity-threshold tuning are unverified because no real embedding API key or operational threshold is configured. The daily expiry cron job is not implemented as a standalone worker job; time-based eligibility is enforced at query and finalization boundaries via `expiresAt > clock_timestamp()`. Original broader acceptance criteria below remain release gates where noted.
+
+- **Provider/model:** OpenAI `text-embedding-3-small` with 1536 dimensions. Embedding profile string `openai:text-embedding-3-small:1536:topic-category-pace:v1` stored with each lesson.
+- **Implemented:** Native-fetch embedding adapter with strict Zod validation, HNSW-indexed cosine-distance search, configurable `SIMILARITY_MAX_DISTANCE` env var, transactional reuse with assignment-time eligibility recheck (`FOR SHARE` lock), embedding/search failure blocks LLM generation.
+- **Compatibility rules:** Same category, pace, continuation context, embedding profile, content version, non-expiry, non-null embedding. Continuation tracks exclude already-assigned lessons. Same-user reuse permitted into new tracks.
+- **Migrations:** `0004_semantic_vectors.sql` and `0005_reuse_compatibility.sql`.
+- **Verification executed (2026-09-19):** `npm test`: 50 passed, 0 failed. `npm run test:database`: 8 passed. `npm run typecheck`: passed (all 5 workspaces). `npm run lint`: passed (5 pre-existing warnings). `npm run build`: passed. No real API keys committed. HNSW index verified by EXPLAIN ANALYZE on 1000-lesson fixture. End-to-end API-to-worker reuse path confirmed.
+- **Remaining gates:** Live embedding quality evaluation. Operational threshold tuning (OQ-7). Standalone daily expiry cron (FR-EXP-01). Quota charging (Phase 4D).
+
+**Next action:** Begin Phase 4D only when explicitly instructed.
+
+Original specification analysis and broader acceptance criteria:
+
+
 - **Objective:** Complete the actual generation routing: embed the resolved request, search compatible non-expired content, reuse on an eligible match, otherwise call 4B; maintain expiry without removing owner access.
 - **Specification references:** PRD §6; ARCH §§3/4; DATA §§3/5; BL §§2/6; SRS FR-GEN-06–10/12, FR-EXP-01–03, NFR-PERF-03, NFR-COST-01/02, NFR-REL-03; OQ #4/6/7.
 - **Dependencies:** 4A safety path, 4B miss branch, approved provider/dimension/metric/index migration in 1; A08/A19–A23 context, compatibility, expiry and configuration decisions; acknowledged initial OQ-7 evaluation policy.
@@ -303,6 +330,8 @@ The original broader plan below remains a record of deferred requirements, not a
 - **Unresolved decisions affecting phase:** OQ-2/3/4/6/7; A07–A09/A15/A19–A25/A27. Selection of index/operator and runtime config propagation must precede claims of NFR-PERF-03/NFR-COST-02 compliance.
 
 ### Phase 4D — Generation Reliability & Quota
+
+**Status: COMPLETE** for the specified implementation scope. See HANDOFF.md for validation details.
 
 - **Objective:** Qualify and complete the integrated generation system under failures/concurrency, building on the safety already delivered in 4A.
 - **Specification references:** BL §§1/2; ARCH §4; DATA §§5/7; API §4/§8; SRS FR-GEN-03–09, FR-EXP-01–03, NFR-REL-01–03, NFR-PERF-01/02, NFR-SCALE-01; UC-1/2/4.

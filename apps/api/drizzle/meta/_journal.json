@@ -22,6 +22,27 @@
       "when": 1789805902942,
       "tag": "0002_secret_gorgon",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789809381283,
+      "tag": "0003_nullable_lesson_embedding",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789810851959,
+      "tag": "0004_semantic_vectors",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789810998187,
+      "tag": "0005_reuse_compatibility",
+      "breakpoints": true
     }
   ]
 }

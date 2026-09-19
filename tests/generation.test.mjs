@@ -85,6 +85,7 @@ test('generation API -> PostgreSQL -> Redis -> worker -> status', {
         pace: 'CASUAL',
         interests: ['programming'],
         onboardingCompletedAt: new Date(),
+        freeGenerationsLeft: 100,
       },
       {
         email: 'stranger@example.test',
@@ -310,7 +311,7 @@ test('generation API -> PostgreSQL -> Redis -> worker -> status', {
             [owner.id],
           )
         ).rows[0].free_generations_left,
-        3,
+        100,
       );
       assert.equal(
         (await database.pool.query('SELECT * FROM lessons')).rowCount,

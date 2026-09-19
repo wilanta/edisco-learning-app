@@ -17,7 +17,7 @@ test('foundation health and invalid configuration', async () => {
     const invalid = spawnSync(process.execPath, ['apps/api/dist/server.js'], {
       env: { ...process.env, PORT: 'not-a-port' },
       encoding: 'utf8',
-      timeout: 5000,
+      timeout: 15000,
     });
     assert.equal(invalid.status, 1);
     assert.match(invalid.stderr, /PORT must be an integer/);

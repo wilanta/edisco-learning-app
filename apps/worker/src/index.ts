@@ -3,6 +3,7 @@ import { Worker } from 'bullmq';
 import { Redis } from 'ioredis';
 import type { HealthResponse } from '@edisco/shared-types';
 import { failGeneration, processGeneration } from './generation.js';
+import { readReuseThreshold } from './embedding/reuse.js';
 
 const redisUrl = process.env.REDIS_URL;
 if (
@@ -13,11 +14,16 @@ if (
   throw new Error('REDIS_URL must use redis:// or rediss://');
 }
 
-if (process.env.GENERATION_PLACEHOLDER_ENABLED !== 'true') {
+const placeholder = process.env.GENERATION_PLACEHOLDER_ENABLED === 'true';
+const llm = process.env.GENERATION_LLM_ENABLED === 'true';
+if (placeholder === llm) {
   throw new Error(
-    'Set GENERATION_PLACEHOLDER_ENABLED=true for the Phase 4A smoke processor',
+    'Enable exactly one generation mode: GENERATION_LLM_ENABLED or GENERATION_PLACEHOLDER_ENABLED',
   );
 }
+if (llm && !process.env.OPENAI_API_KEY?.trim())
+  throw new Error('OpenAI is not configured');
+if (llm) readReuseThreshold();
 if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
 const { db, pool } = createDatabase(process.env.DATABASE_URL);
 const connection = new Redis(redisUrl, {
@@ -38,7 +44,7 @@ const worker = new Worker(
     ) {
       throw new Error('Invalid generation queue job');
     }
-    return processGeneration(db, job.id as string);
+    return processGeneration(db, job.id as string, llm ? 'llm' : 'placeholder');
   },
   { connection, prefix: process.env.GENERATION_QUEUE_PREFIX ?? 'bull' },
 );
