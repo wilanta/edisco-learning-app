@@ -43,6 +43,13 @@
       "when": 1789810998187,
       "tag": "0005_reuse_compatibility",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789895334366,
+      "tag": "0006_empty_firelord",
+      "breakpoints": true
     }
   ]
 }

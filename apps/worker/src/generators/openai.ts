@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { OpenAIRequestError, rejectOpenAIResponse } from '../openai-error.js';
 import {
   categoryTypes,
   generationInput,
@@ -43,7 +44,7 @@ export async function generateLesson(value: GenerationInput) {
         },
       }),
     });
-    if (!response.ok) throw new Error('Provider request failed');
+    if (!response.ok) await rejectOpenAIResponse(response);
     const body = z
       .object({
         status: z.literal('completed'),
@@ -69,7 +70,8 @@ export async function generateLesson(value: GenerationInput) {
     )
       throw new Error('Missing generation');
     return validateLesson(JSON.parse(content[0].text), input.category);
-  } catch {
+  } catch (error) {
+    if (error instanceof OpenAIRequestError) throw error;
     // Provider bodies and validation errors can contain prompts/answers/secrets.
     throw new Error('Lesson generation failed');
   }

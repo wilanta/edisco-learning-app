@@ -1,9 +1,46 @@
+# Dependencies and generated output
 node_modules/
 .next/
 dist/
+out/
 coverage/
+.turbo/
+.cache/
 *.tsbuildinfo
 *.log
+
+# All environment files, including examples, at every directory level
 .env
 .env.*
-!.env.example
+*.env
+*.env.*
+
+# Keep development documentation local, except the startup guide
+*.[mM][dD]
+!howtostart.md
+
+# Private keys and local credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+.envrc
+
+# Local scratch work, recovery copies, and test artifacts
+/scratch/
+/.local-backups/
+playwright-report/
+test-results/
+.nyc_output/
+
+# Machine-specific editor/agent settings and OS files
+.claude/settings.local.json
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~

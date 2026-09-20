@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { generateLesson } from '../apps/worker/dist/generators/openai.js';
 import {
   createEmbedding,
   EMBEDDING_MODEL,
@@ -10,6 +11,56 @@ const vector = Array.from({ length: 1536 }, (_, i) => (i === 0 ? 1 : 0));
 const response = (embedding = vector, model = 'text-embedding-3-small') => ({
   model,
   data: [{ index: 0, embedding }],
+});
+
+test('both OpenAI calls distinguish exhausted credits from rate limits without exposing provider details', async (t) => {
+  const original = process.env.OPENAI_API_KEY;
+  t.after(() => {
+    if (original === undefined) delete process.env.OPENAI_API_KEY;
+    else process.env.OPENAI_API_KEY = original;
+  });
+  process.env.OPENAI_API_KEY = 'test-only-key';
+  const calls = [
+    () => createEmbedding('Python'),
+    () =>
+      generateLesson({
+        topic: 'Python',
+        category: 'PROGRAMMING',
+        pace: 'REGULAR',
+        previousLessons: [],
+      }),
+  ];
+  for (const call of calls) {
+    for (const [status, error, message] of [
+      [
+        429,
+        { code: 'credit_balance_exhausted', type: 'insufficient_quota' },
+        /OpenAI API credits.*billing/,
+      ],
+      [429, { code: 'insufficient_quota' }, /OpenAI API credits.*billing/],
+      [429, { code: 'rate_limit_exceeded' }, /rate limit.*try again/i],
+      [401, { code: 'invalid_api_key' }, /API key.*configuration/],
+      [500, { code: 'private-provider-code' }, /temporarily unavailable/],
+    ]) {
+      const mock = t.mock.method(globalThis, 'fetch', async () =>
+        Response.json(
+          {
+            error: {
+              ...error,
+              message: 'private-provider-detail test-only-key',
+            },
+          },
+          { status },
+        ),
+      );
+      await assert.rejects(call(), (error) => {
+        assert.match(error.message, message);
+        assert.doesNotMatch(error.message, /private|test-only-key/);
+        return true;
+      });
+      mock.mock.restore();
+    }
+  }
 });
 
 test('embedding request uses the pinned model/dimension and validates its response', async (t) => {

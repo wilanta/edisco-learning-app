@@ -1,19 +1,25 @@
 'use client';
-import { useState, useEffect } from 'react';
+
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Icon, type IconName } from '@/components/icons';
+import { OnboardingFrame } from '@/components/onboarding-ui';
 import {
   getOnboardingDraft,
   updateOnboardingDraft,
-} from '../../../lib/onboarding-draft';
+} from '@/lib/onboarding-draft';
 
-const CATEGORIES = [
-  'Programming',
-  'Language',
-  'Math',
-  'Science',
-  'Engineering',
-  'Career/Soft Skills',
-  'Other',
+const CATEGORIES: { label: string; icon: IconName }[] = [
+  { label: 'Sains', icon: 'flask' },
+  { label: 'Matematika', icon: 'calculator' },
+  { label: 'Pemrograman', icon: 'code' },
+  { label: 'Teknologi', icon: 'laptop' },
+  { label: 'Ilmu Sosial', icon: 'people' },
+  { label: 'Psikologi', icon: 'leaf' },
+  { label: 'Linguistik', icon: 'book' },
+  { label: 'Bahasa', icon: 'message' },
+  { label: 'Hukum', icon: 'building' },
+  { label: 'Lainnya', icon: 'globe' },
 ];
 
 export default function InterestsPage() {
@@ -22,94 +28,84 @@ export default function InterestsPage() {
   const [otherText, setOtherText] = useState('');
 
   useEffect(() => {
-    const draft = getOnboardingDraft();
-    if (draft.interests) {
-      const standard = draft.interests.filter(
-        (i) => CATEGORIES.includes(i) || i === 'Other',
-      );
-      const other = draft.interests.find(
-        (i) => !CATEGORIES.includes(i) && i !== 'Other',
-      );
-
-      const sel = [...standard];
-      if (other) {
-        sel.push('Other');
-        setOtherText(other);
-      }
-      setSelected(sel);
+    const interests = getOnboardingDraft().interests || [];
+    const labels = CATEGORIES.map((item) => item.label);
+    const custom = interests.find((item) => !labels.includes(item));
+    setSelected(interests.filter((item) => labels.includes(item)));
+    if (custom) {
+      setSelected((current) => [...current, 'Lainnya']);
+      setOtherText(custom);
     }
   }, []);
 
-  const toggleCategory = (cat: string) => {
-    if (selected.includes(cat)) {
-      setSelected(selected.filter((c) => c !== cat));
-    } else {
-      setSelected([...selected, cat]);
-    }
-  };
-
-  const handleNext = () => {
-    if (selected.length === 0) return;
-
-    let finalInterests = [...selected];
-    if (selected.includes('Other') && otherText.trim()) {
-      // Replace "Other" with the actual text, or add it alongside.
-      // The API expects a list of strings.
-      finalInterests = finalInterests.filter((i) => i !== 'Other');
-      finalInterests.push(otherText.trim());
-    } else if (selected.includes('Other') && !otherText.trim()) {
-      // If other is selected but text is empty, just remove it or keep it as 'Other'
-      // We'll keep it as 'Other'
-    }
-
-    updateOnboardingDraft({ interests: finalInterests });
+  const toggle = (label: string) =>
+    setSelected((current) => {
+      if (current.includes(label))
+        return current.filter((item) => item !== label);
+      return current.length >= 3 ? current : [...current, label];
+    });
+  const next = () => {
+    if (!selected.length) return;
+    updateOnboardingDraft({
+      interests: selected.map((item) =>
+        item === 'Lainnya' && otherText.trim() ? otherText.trim() : item,
+      ),
+    });
     router.push('/pace');
   };
 
   return (
-    <div className="flex flex-col items-center min-h-screen p-6 max-w-xl mx-auto w-full">
-      <h1 className="text-3xl font-bold mt-12 mb-2 text-center">
-        What do you want to learn?
-      </h1>
-      <p className="text-gray-500 mb-8 text-center">
-        Select at least one interest.
-      </p>
-
-      <div className="flex flex-col gap-3 w-full mb-8">
-        {CATEGORIES.map((cat) => (
-          <div key={cat} className="w-full">
-            <button
-              type="button"
-              onClick={() => toggleCategory(cat)}
-              className={`w-full p-4 rounded-xl border-2 text-left font-medium transition-colors ${
-                selected.includes(cat)
-                  ? 'border-blue-600 bg-blue-50 text-blue-700'
-                  : 'border-gray-200 hover:border-blue-300'
-              }`}
-            >
-              {cat}
-            </button>
-            {cat === 'Other' && selected.includes('Other') && (
-              <input
-                type="text"
-                placeholder="Type your interest here..."
-                className="mt-2 w-full p-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 outline-none"
-                value={otherText}
-                onChange={(e) => setOtherText(e.target.value)}
-              />
+    <OnboardingFrame step={3} compactStep="1/3">
+      <div className="onboarding-grid">
+        <section className="onboarding-copy">
+          <span className="eyebrow">Langkah 3 dari 6</span>
+          <h1>
+            Pilih <em>minatmu</em>
+          </h1>
+          <p>
+            Pilih hingga 3 hal yang membuatmu tertarik. Kami akan menyesuaikan
+            pengalaman belajarmu.
+          </p>
+        </section>
+        <section className="onboarding-panel">
+          <div className="interest-grid">
+            {CATEGORIES.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => toggle(item.label)}
+                aria-pressed={selected.includes(item.label)}
+                className={`interest-card ${selected.includes(item.label) ? 'selected' : ''}`}
+              >
+                <span className="interest-icon">
+                  <Icon name={item.icon} />
+                </span>
+                {item.label}
+              </button>
+            ))}
+            {selected.includes('Lainnya') && (
+              <label className="interest-other">
+                <span className="sr-only">Minat lainnya</span>
+                <input
+                  value={otherText}
+                  onChange={(event) => setOtherText(event.target.value)}
+                  placeholder="Ceritakan apa yang ingin kamu pelajari"
+                />
+              </label>
             )}
           </div>
-        ))}
+          <div className="onboarding-actions">
+            <button
+              type="button"
+              className="primary-button"
+              disabled={!selected.length}
+              onClick={next}
+            >
+              Selanjutnya <Icon name="arrow-right" width={22} />
+            </button>
+          </div>
+        </section>
       </div>
-
-      <button
-        type="button"
-        onClick={handleNext}
-        disabled={selected.length === 0}
-        className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700"
-      >
-        Continue
-      </button>
-    </div>
+    </OnboardingFrame>
   );
 }

@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import cors from '@fastify/cors';
 import type { HealthResponse } from '@edisco/shared-types';
 import dbPlugin from './plugins/db.js';
 import authPlugin from './plugins/auth.js';
@@ -11,6 +12,14 @@ import leagueRoutes from './modules/league/league.routes.js';
 
 export function buildApp() {
   const app = Fastify({ logger: true });
+
+  // Enable CORS for development
+  app.register(cors, {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  });
 
   // Register DB
   app.register(dbPlugin);

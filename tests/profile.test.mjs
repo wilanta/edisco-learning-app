@@ -1,10 +1,10 @@
-import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { buildApp } from '../apps/api/dist/app.js';
+import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { createDatabase } from '@edisco/database';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
-import { fileURLToPath } from 'node:url';
+import { buildApp } from '../apps/api/dist/app.js';
 
 test('Profile API', async (t) => {
   const connectionString = process.env.DATABASE_URL;
@@ -38,13 +38,15 @@ test('Profile API', async (t) => {
   await app.ready();
 
   let token = '';
+  let email = '';
 
   await t.test('Seed user', async () => {
+    email = `test-prof-${Date.now()}@example.com`;
     const regRes = await app.inject({
       method: 'POST',
       url: '/auth/register',
       payload: {
-        email: `test-prof-${Date.now()}@example.com`,
+        email,
         password: 'password',
         name: 'Tester P',
       },
@@ -74,6 +76,8 @@ test('Profile API', async (t) => {
     assert.deepEqual(body.interests, ['PROGRAMMING']);
     assert.ok('freeGenerationsLeft' in body);
     assert.ok('totalXp' in body);
+    assert.equal(body.avatarUrl, null);
+    assert.equal(body.theme, 'LIGHT');
   });
 
   await t.test('PATCH /users/me - update pace and interests', async () => {
@@ -120,6 +124,110 @@ test('Profile API', async (t) => {
     });
     assert.equal(res.statusCode, 401);
   });
+
+  await t.test(
+    'PATCH /users/me/account - updates account settings',
+    async () => {
+      const nextEmail = `updated-${Date.now()}@example.com`;
+      const avatarUrl = 'data:image/png;base64,aGVsbG8=';
+      const res = await app.inject({
+        method: 'PATCH',
+        url: '/users/me/account',
+        headers: { Authorization: `Bearer ${token}` },
+        payload: { email: nextEmail.toUpperCase(), avatarUrl, theme: 'DARK' },
+      });
+      assert.equal(res.statusCode, 200);
+      assert.equal(res.json().email, nextEmail);
+      assert.equal(res.json().avatarUrl, avatarUrl);
+      assert.equal(res.json().theme, 'DARK');
+      email = nextEmail;
+
+      const getRes = await app.inject({
+        method: 'GET',
+        url: '/users/me',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      assert.equal(getRes.json().email, nextEmail);
+      assert.equal(getRes.json().avatarUrl, avatarUrl);
+      assert.equal(getRes.json().theme, 'DARK');
+    },
+  );
+
+  await t.test(
+    'PATCH /users/me/account - rejects unsafe avatar data',
+    async () => {
+      const res = await app.inject({
+        method: 'PATCH',
+        url: '/users/me/account',
+        headers: { Authorization: `Bearer ${token}` },
+        payload: { avatarUrl: 'data:image/svg+xml;base64,PHN2Zy8+' },
+      });
+      assert.equal(res.statusCode, 400);
+    },
+  );
+
+  await t.test(
+    'PATCH /users/me/account - rejects an email in use',
+    async () => {
+      const occupiedEmail = `occupied-${Date.now()}@example.com`;
+      const registration = await app.inject({
+        method: 'POST',
+        url: '/auth/register',
+        payload: {
+          email: occupiedEmail,
+          password: 'password',
+          name: 'Other user',
+        },
+      });
+      assert.equal(registration.statusCode, 201);
+
+      const res = await app.inject({
+        method: 'PATCH',
+        url: '/users/me/account',
+        headers: { Authorization: `Bearer ${token}` },
+        payload: { email: occupiedEmail },
+      });
+      assert.equal(res.statusCode, 409);
+      assert.equal(res.json().error, 'CONFLICT');
+    },
+  );
+
+  await t.test(
+    'PATCH /users/me/password - verifies current password',
+    async () => {
+      const wrongPassword = await app.inject({
+        method: 'PATCH',
+        url: '/users/me/password',
+        headers: { Authorization: `Bearer ${token}` },
+        payload: {
+          currentPassword: 'wrong-password',
+          newPassword: 'new-password',
+        },
+      });
+      assert.equal(wrongPassword.statusCode, 401);
+
+      const updated = await app.inject({
+        method: 'PATCH',
+        url: '/users/me/password',
+        headers: { Authorization: `Bearer ${token}` },
+        payload: { currentPassword: 'password', newPassword: 'new-password' },
+      });
+      assert.equal(updated.statusCode, 200);
+
+      const oldLogin = await app.inject({
+        method: 'POST',
+        url: '/auth/login',
+        payload: { email, password: 'password' },
+      });
+      assert.equal(oldLogin.statusCode, 401);
+      const newLogin = await app.inject({
+        method: 'POST',
+        url: '/auth/login',
+        payload: { email, password: 'new-password' },
+      });
+      assert.equal(newLogin.statusCode, 200);
+    },
+  );
 
   // Cleanup
   try {

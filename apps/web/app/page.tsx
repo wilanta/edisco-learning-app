@@ -1,6 +1,6 @@
 'use client';
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { getAuthToken } from '../lib/api-client';
 
 export default function Home() {
@@ -15,5 +15,5 @@ export default function Home() {
     }
   }, [router]);
 
-  return <div className="p-8">Loading...</div>;
+  return <div className="p-8">Memuat...</div>;
 }

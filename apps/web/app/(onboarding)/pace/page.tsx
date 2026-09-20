@@ -1,79 +1,121 @@
 'use client';
-import { useState, useEffect } from 'react';
+
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Icon, type IconName } from '@/components/icons';
+import { OnboardingFrame } from '@/components/onboarding-ui';
 import {
   getOnboardingDraft,
   updateOnboardingDraft,
-} from '../../../lib/onboarding-draft';
+} from '@/lib/onboarding-draft';
 
 type Pace = 'CASUAL' | 'REGULAR' | 'INTENSIVE';
-
-const PACES: { id: Pace; label: string; desc: string }[] = [
-  { id: 'CASUAL', label: 'Casual', desc: '5–10 min/day' },
-  { id: 'REGULAR', label: 'Regular', desc: '15–20 min/day' },
-  { id: 'INTENSIVE', label: 'Intensive', desc: '30+ min/day' },
+const PACES: {
+  id: string;
+  value: Pace;
+  label: string;
+  description: string;
+  icon: IconName;
+}[] = [
+  {
+    id: 'quick',
+    value: 'CASUAL',
+    label: '1–3 menit sehari',
+    description: 'Mulai dengan cepat',
+    icon: 'leaf',
+  },
+  {
+    id: 'simple',
+    value: 'REGULAR',
+    label: '5–10 menit sehari',
+    description: 'Tetap sederhana',
+    icon: 'clock',
+  },
+  {
+    id: 'progress',
+    value: 'INTENSIVE',
+    label: '15–20 menit sehari',
+    description: 'Bangun kemajuan nyata',
+    icon: 'target',
+  },
+  {
+    id: 'further',
+    value: 'INTENSIVE',
+    label: '30+ menit sehari',
+    description: 'Melangkah lebih jauh',
+    icon: 'rocket',
+  },
 ];
 
 export default function PacePage() {
   const router = useRouter();
-  const [selected, setSelected] = useState<Pace | null>(null);
-
+  const [selectedId, setSelectedId] = useState('');
   useEffect(() => {
     const draft = getOnboardingDraft();
-    // Redirect back if no interests (no skipping)
-    if (!draft.interests || draft.interests.length === 0) {
-      router.replace('/interests');
-    }
-    if (draft.pace) {
-      setSelected(draft.pace);
-    }
+    if (!draft.interests?.length) router.replace('/interests');
+    if (draft.pace)
+      setSelectedId(
+        PACES.find((pace) => pace.value === draft.pace)?.id || 'simple',
+      );
   }, [router]);
-
-  const handleNext = () => {
+  const next = () => {
+    const selected = PACES.find((pace) => pace.id === selectedId);
     if (!selected) return;
-    updateOnboardingDraft({ pace: selected });
+    updateOnboardingDraft({ pace: selected.value });
     router.push('/register');
   };
 
   return (
-    <div className="flex flex-col items-center min-h-screen p-6 max-w-xl mx-auto w-full">
-      <h1 className="text-3xl font-bold mt-12 mb-2 text-center">
-        Set your daily goal
-      </h1>
-      <p className="text-gray-500 mb-8 text-center">
-        How much time do you want to spend learning?
-      </p>
-
-      <div className="flex flex-col gap-4 w-full mb-8">
-        {PACES.map((p) => (
-          <button
-            type="button"
-            key={p.id}
-            onClick={() => setSelected(p.id)}
-            className={`w-full p-5 rounded-xl border-2 flex items-center justify-between font-medium transition-colors ${
-              selected === p.id
-                ? 'border-blue-600 bg-blue-50 text-blue-700'
-                : 'border-gray-200 hover:border-blue-300'
-            }`}
-          >
-            <span className="text-lg">{p.label}</span>
-            <span
-              className={selected === p.id ? 'text-blue-600' : 'text-gray-500'}
+    <OnboardingFrame step={4} compactStep="2/3">
+      <div className="onboarding-grid">
+        <section className="onboarding-copy">
+          <span className="eyebrow">Langkah 4 dari 6</span>
+          <h1>
+            Atur <em>ritme belajarmu</em>
+          </h1>
+          <p>
+            Pilih waktu yang ingin kamu luangkan untuk belajar setiap hari. Kamu
+            dapat mengubahnya kapan saja.
+          </p>
+        </section>
+        <section className="onboarding-panel">
+          <div className="pace-list">
+            {PACES.map((pace) => (
+              <button
+                key={pace.id}
+                type="button"
+                className={`pace-card ${selectedId === pace.id ? 'selected' : ''}`}
+                onClick={() => setSelectedId(pace.id)}
+                aria-pressed={selectedId === pace.id}
+              >
+                <span className="pace-icon">
+                  <Icon name={pace.icon} />
+                </span>
+                <span>
+                  <strong>{pace.label}</strong>
+                  <small>{pace.description}</small>
+                </span>
+                <span className="check-dot">
+                  <Icon
+                    name={selectedId === pace.id ? 'check' : 'arrow-right'}
+                    width={20}
+                  />
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="onboarding-actions">
+            <button
+              type="button"
+              className="primary-button"
+              disabled={!selectedId}
+              onClick={next}
             >
-              {p.desc}
-            </span>
-          </button>
-        ))}
+              Selanjutnya <Icon name="arrow-right" width={22} />
+            </button>
+          </div>
+        </section>
       </div>
-
-      <button
-        type="button"
-        onClick={handleNext}
-        disabled={!selected}
-        className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700"
-      >
-        Continue
-      </button>
-    </div>
+    </OnboardingFrame>
   );
 }

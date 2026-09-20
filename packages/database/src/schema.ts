@@ -17,6 +17,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 export const pace = pgEnum('pace', ['CASUAL', 'REGULAR', 'INTENSIVE']);
+export const themePreference = pgEnum('theme_preference', ['LIGHT', 'DARK']);
 export const category = pgEnum('category', [
   'PROGRAMMING',
   'LANGUAGE',
@@ -55,6 +56,8 @@ export const users = pgTable(
     email: text().notNull().unique(),
     passwordHash: text('password_hash'),
     name: text().notNull(),
+    avatarUrl: text('avatar_url'),
+    theme: themePreference().notNull().default('LIGHT'),
     pace: pace(),
     interests: text().array(),
     freeGenerationsLeft: integer('free_generations_left').notNull().default(3),

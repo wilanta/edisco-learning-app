@@ -336,6 +336,59 @@ test('semantic reuse with actual pgvector and transactional generation', {
     },
   );
   await t.test(
+    'exhausted OpenAI credits reach the status API without spending lesson quota',
+    async (t) => {
+      const before = await db.query.users.findFirst({
+        where: eq(users.id, other.id),
+      });
+      const assignments = (
+        await pool.query('SELECT count(*) FROM user_lessons')
+      ).rows[0].count;
+      t.mock.method(globalThis, 'fetch', async () =>
+        Response.json(
+          {
+            error: {
+              type: 'insufficient_quota',
+              code: 'credit_balance_exhausted',
+              message: 'private-provider-detail',
+            },
+          },
+          { status: 429 },
+        ),
+      );
+      const failed = await job();
+      await assert.rejects(processGeneration(db, failed.id, 'llm'));
+      const after = await db.query.users.findFirst({
+        where: eq(users.id, other.id),
+      });
+      assert.equal(after.freeGenerationsLeft, before.freeGenerationsLeft);
+      assert.equal(
+        (await pool.query('SELECT count(*) FROM user_lessons')).rows[0].count,
+        assignments,
+      );
+      process.env.DATABASE_URL = url.toString();
+      process.env.JWT_SECRET = 'reuse-test-only';
+      const app = buildApp();
+      try {
+        await app.ready();
+        const result = await app.inject({
+          method: 'GET',
+          url: `/lessons/generate/${failed.id}`,
+          headers: {
+            authorization: `Bearer ${app.jwt.sign({ userId: other.id })}`,
+          },
+        });
+        assert.equal(result.statusCode, 200);
+        assert.equal(result.json().status, 'FAILED');
+        assert.equal(result.json().resultLessonId, null);
+        assert.match(result.json().errorMessage, /OpenAI API credits.*billing/);
+        assert.doesNotMatch(result.body, /private-provider-detail/);
+      } finally {
+        await app.close();
+      }
+    },
+  );
+  await t.test(
     'missing threshold or search failure cannot bypass reuse and call the LLM',
     async (t) => {
       const llmBefore = llmCalls,

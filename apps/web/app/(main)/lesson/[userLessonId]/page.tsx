@@ -1,15 +1,23 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
-import { useRouter } from 'next/navigation';
-import { apiFetch } from '@/lib/api-client';
 import Link from 'next/link';
+import { use, useEffect, useState } from 'react';
+import { apiFetch } from '@/lib/api-client';
+
+type Prompt = {
+  question?: string;
+  explanation?: string;
+  options?: string[];
+  blanks?: { id: string }[];
+  leftOptions?: string[];
+  rightOptions?: string[];
+};
 
 type Part = {
   partId: string;
   order: number;
   type: string;
-  prompt: any;
+  prompt: Prompt;
   userProgress: {
     isCorrect: boolean | null;
     attempts: number;
@@ -23,19 +31,28 @@ type Lesson = {
   parts: Part[];
 };
 
+const PART_TYPE_LABELS: Record<string, string> = {
+  MULTIPLE_CHOICE: 'Pilihan Ganda',
+  FILL_IN_BLANK: 'Isi Bagian Kosong',
+  MATCHING: 'Mencocokkan',
+  TRUE_FALSE: 'Benar atau Salah',
+  CODE_PREDICT: 'Prediksi Kode',
+  TRANSLATE: 'Terjemahkan',
+  SHORT_ANSWER: 'Jawaban Singkat',
+};
+
 export default function LessonPage({
   params,
 }: {
   params: Promise<{ userLessonId: string }>;
 }) {
   const unwrappedParams = use(params);
-  const router = useRouter();
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPartIndex, setCurrentPartIndex] = useState(0);
 
-  const [answer, setAnswer] = useState<any>('');
+  const [answer, setAnswer] = useState('');
   const [matchingPairs, setMatchingPairs] = useState<
     { left: string; right: string }[]
   >([]);
@@ -62,19 +79,21 @@ export default function LessonPage({
         }
         setLoading(false);
       })
-      .catch((err) => {
-        setError(err.message || 'Failed to load lesson');
+      .catch((caught: unknown) => {
+        setError(
+          caught instanceof Error ? caught.message : 'Gagal memuat pelajaran',
+        );
         setLoading(false);
       });
   }, [unwrappedParams.userLessonId]);
 
-  // Reset state when part changes
-  useEffect(() => {
+  const goToPart = (index: number) => {
     setAnswer('');
     setMatchingPairs([]);
     setFillBlanks({});
     setFeedback(null);
-  }, [currentPartIndex]);
+    setCurrentPartIndex(index);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +107,7 @@ export default function LessonPage({
       setSubmitting(false);
       return;
     }
-    let submitPayload = answer;
+    let submitPayload: unknown = answer;
 
     if (part.type === 'MATCHING') submitPayload = matchingPairs;
     else if (part.type === 'FILL_IN_BLANK') submitPayload = fillBlanks;
@@ -117,8 +136,10 @@ export default function LessonPage({
         newParts[currentPartIndex].userProgress.attempts += 1;
       }
       setLesson({ ...lesson, parts: newParts });
-    } catch (err: any) {
-      setError(err.message || 'Failed to submit answer');
+    } catch (caught: unknown) {
+      setError(
+        caught instanceof Error ? caught.message : 'Gagal mengirim jawaban',
+      );
     } finally {
       setSubmitting(false);
     }
@@ -126,7 +147,9 @@ export default function LessonPage({
 
   if (loading)
     return (
-      <div className="p-8 max-w-3xl mx-auto text-center">Loading lesson...</div>
+      <div className="p-8 max-w-3xl mx-auto text-center">
+        Memuat pelajaran...
+      </div>
     );
   if (error)
     return <div className="p-8 max-w-3xl mx-auto text-red-600">{error}</div>;
@@ -136,13 +159,13 @@ export default function LessonPage({
   if (!part)
     return (
       <div className="p-8 max-w-3xl mx-auto text-center">
-        Lesson part not found.
+        Bagian pelajaran tidak ditemukan.
       </div>
     );
   const isComplete = lesson.parts.every((p) => p.userProgress.isCorrect);
 
   const renderInput = () => {
-    const p = part.prompt || {};
+    const p = part.prompt;
     switch (part.type) {
       case 'MULTIPLE_CHOICE':
         return (
@@ -180,7 +203,7 @@ export default function LessonPage({
                 disabled={submitting || feedback?.isCorrect}
                 className="h-4 w-4"
               />
-              <span className="font-medium text-lg">True</span>
+              <span className="font-medium text-lg">Benar</span>
             </label>
             <label className="flex-1 flex items-center justify-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
               <input
@@ -192,7 +215,7 @@ export default function LessonPage({
                 disabled={submitting || feedback?.isCorrect}
                 className="h-4 w-4"
               />
-              <span className="font-medium text-lg">False</span>
+              <span className="font-medium text-lg">Salah</span>
             </label>
           </div>
         );
@@ -200,16 +223,23 @@ export default function LessonPage({
       case 'FILL_IN_BLANK':
         return (
           <div className="mt-4 space-y-4">
-            {p.blanks?.map((b: any, idx: number) => (
-              <div key={b.id}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Blank {idx + 1}
+            {p.blanks?.map((blank, idx) => (
+              <div key={blank.id}>
+                <label
+                  htmlFor={`blank-${blank.id}`}
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Bagian kosong {idx + 1}
                 </label>
                 <input
                   type="text"
-                  value={fillBlanks[b.id] || ''}
+                  id={`blank-${blank.id}`}
+                  value={fillBlanks[blank.id] || ''}
                   onChange={(e) =>
-                    setFillBlanks({ ...fillBlanks, [b.id]: e.target.value })
+                    setFillBlanks({
+                      ...fillBlanks,
+                      [blank.id]: e.target.value,
+                    })
                   }
                   disabled={submitting || feedback?.isCorrect}
                   className="w-full px-4 py-2 border rounded-md focus:ring-blue-500"
@@ -224,12 +254,12 @@ export default function LessonPage({
         // Simplified matching: render dropdowns for left options to select right options
         return (
           <div className="mt-4 space-y-4">
-            {p.leftOptions?.map((left: string, idx: number) => {
+            {p.leftOptions?.map((left) => {
               const currentMatch =
                 matchingPairs.find((mp) => mp.left === left)?.right || '';
               return (
                 <div
-                  key={idx}
+                  key={left}
                   className="flex flex-col sm:flex-row sm:items-center gap-2"
                 >
                   <div className="flex-1 p-3 bg-gray-50 border rounded-md">
@@ -252,9 +282,9 @@ export default function LessonPage({
                     className="flex-1 px-4 py-3 border rounded-md focus:ring-blue-500"
                     required
                   >
-                    <option value="">Select match...</option>
-                    {p.rightOptions?.map((right: string, i: number) => (
-                      <option key={i} value={right}>
+                    <option value="">Pilih pasangan...</option>
+                    {p.rightOptions?.map((right) => (
+                      <option key={right} value={right}>
                         {right}
                       </option>
                     ))}
@@ -265,9 +295,6 @@ export default function LessonPage({
           </div>
         );
 
-      case 'CODE_PREDICT':
-      case 'TRANSLATE':
-      case 'SHORT_ANSWER':
       default:
         return (
           <div className="mt-4">
@@ -276,7 +303,7 @@ export default function LessonPage({
               onChange={(e) => setAnswer(e.target.value)}
               disabled={submitting || feedback?.isCorrect}
               className="w-full px-4 py-3 border rounded-md focus:ring-blue-500 font-mono text-sm h-32"
-              placeholder="Type your answer here..."
+              placeholder="Ketik jawabanmu di sini..."
               required
             />
           </div>
@@ -293,10 +320,10 @@ export default function LessonPage({
           href="/track"
           className="text-gray-500 hover:text-gray-900 text-sm flex items-center"
         >
-          ← Back to Track
+          ← Kembali ke Jalur
         </Link>
         <div className="text-sm text-gray-500 font-medium">
-          Part {currentPartIndex + 1} of {lesson.parts.length}
+          Bagian {currentPartIndex + 1} dari {lesson.parts.length}
         </div>
       </div>
 
@@ -305,17 +332,17 @@ export default function LessonPage({
           <h1 className="text-xl font-bold text-gray-900">{lesson.title}</h1>
           {isComplete && (
             <span className="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-full">
-              COMPLETED
+              SELESAI
             </span>
           )}
         </div>
 
         <div className="p-6">
           <div className="mb-2 text-sm font-semibold text-blue-600 uppercase tracking-wider">
-            {part.type.replace(/_/g, ' ')}
+            {PART_TYPE_LABELS[part.type] || part.type.replace(/_/g, ' ')}
           </div>
           <h2 className="text-lg text-gray-800 font-medium mb-6">
-            {part.prompt?.question || 'Answer the question'}
+            {part.prompt?.question || 'Jawab pertanyaan berikut'}
           </h2>
 
           <form onSubmit={handleSubmit}>
@@ -328,7 +355,7 @@ export default function LessonPage({
                   disabled={submitting}
                   className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
-                  {submitting ? 'Checking...' : 'Check Answer'}
+                  {submitting ? 'Memeriksa...' : 'Periksa Jawaban'}
                 </button>
               ) : null}
             </div>
@@ -339,7 +366,7 @@ export default function LessonPage({
               className={`mt-6 p-4 border rounded-lg ${feedback.isCorrect ? 'bg-green-50 border-green-200 text-green-900' : 'bg-red-50 border-red-200 text-red-900'}`}
             >
               <div className="font-bold mb-1">
-                {feedback.isCorrect ? 'Correct!' : 'Incorrect'}
+                {feedback.isCorrect ? 'Benar!' : 'Belum tepat'}
               </div>
               {feedback.explanation && (
                 <div className="text-sm opacity-90">{feedback.explanation}</div>
@@ -349,9 +376,9 @@ export default function LessonPage({
 
           {part.userProgress.isCorrect && !feedback && (
             <div className="mt-6 p-4 border rounded-lg bg-green-50 border-green-200 text-green-900">
-              <div className="font-bold mb-1">Correct!</div>
+              <div className="font-bold mb-1">Benar!</div>
               <div className="text-sm opacity-90">
-                You previously completed this part.
+                Kamu sudah menyelesaikan bagian ini sebelumnya.
               </div>
             </div>
           )}
@@ -361,17 +388,17 @@ export default function LessonPage({
               {currentPartIndex < lesson.parts.length - 1 ? (
                 <button
                   type="button"
-                  onClick={() => setCurrentPartIndex(currentPartIndex + 1)}
+                  onClick={() => goToPart(currentPartIndex + 1)}
                   className="px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-black"
                 >
-                  Next Part →
+                  Bagian Berikutnya →
                 </button>
               ) : (
                 <Link
                   href="/track"
                   className="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700"
                 >
-                  Finish Lesson
+                  Selesaikan Pelajaran
                 </Link>
               )}
             </div>
@@ -385,7 +412,7 @@ export default function LessonPage({
           <button
             key={p.partId}
             type="button"
-            onClick={() => setCurrentPartIndex(idx)}
+            onClick={() => goToPart(idx)}
             className={`w-3 h-3 rounded-full transition-colors ${
               idx === currentPartIndex
                 ? 'bg-blue-600 ring-2 ring-offset-2 ring-blue-600'
@@ -393,7 +420,7 @@ export default function LessonPage({
                   ? 'bg-green-500'
                   : 'bg-gray-300 hover:bg-gray-400'
             }`}
-            title={`Part ${idx + 1}`}
+            title={`Bagian ${idx + 1}`}
           />
         ))}
       </div>

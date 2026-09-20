@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { EMBEDDING_DIMENSIONS } from '@edisco/database/schema';
+import { OpenAIRequestError, rejectOpenAIResponse } from '../openai-error.js';
 export { EMBEDDING_DIMENSIONS };
 
 // These are a persisted vector-space contract, not independently tunable flags.
@@ -34,7 +35,7 @@ export async function createEmbedding(text: string) {
         input,
       }),
     });
-    if (!response.ok) throw new Error('Provider request failed');
+    if (!response.ok) await rejectOpenAIResponse(response);
     const body = z
       .object({
         model: z.literal(EMBEDDING_MODEL),
@@ -44,7 +45,8 @@ export async function createEmbedding(text: string) {
       })
       .parse(await response.json());
     return body.data[0].embedding;
-  } catch {
+  } catch (error) {
+    if (error instanceof OpenAIRequestError) throw error;
     throw new Error('Embedding generation failed');
   }
 }

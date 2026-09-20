@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/clean-dev-cache.mjs && next dev",
     "build": "next build",
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit"

@@ -11,6 +11,7 @@ import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { generateLesson } from './generators/openai.js';
 import { generationInput } from './generators/content.js';
 import { createEmbedding } from './embedding/openai.js';
+import { OpenAIRequestError } from './openai-error.js';
 import {
   contextKey,
   EMBEDDING_PROFILE,
@@ -263,11 +264,21 @@ export async function processGeneration(
       );
     return { placeholder: true, jobId: job.id };
   } catch (error) {
-    console.error('Generation Error:', error);
-    let message = 'Generation processing failed';
+    let message =
+      error instanceof OpenAIRequestError
+        ? error.message
+        : 'Generation processing failed';
     if (error instanceof Error && error.message === 'QUOTA_EXCEEDED') {
       message = 'Free generation quota has been used up';
     }
+    // Raw provider/SQL errors may contain credentials, topics or answers.
+    console.error({
+      event: 'generation_failed',
+      jobId: job.id,
+      message,
+      providerStatus:
+        error instanceof OpenAIRequestError ? error.status : undefined,
+    });
     await failGeneration(db, job.id, message);
     throw new Error('Generation processing failed');
   }

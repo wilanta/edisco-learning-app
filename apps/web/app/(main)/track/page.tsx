@@ -1,8 +1,10 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { apiFetch, removeAuthToken } from '../../../lib/api-client';
+
 import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import { PageSkeleton, useCurrentUser } from '@/components/app-shell';
+import { Icon } from '@/components/icons';
+import { apiFetch } from '@/lib/api-client';
 
 type Track = {
   id: string;
@@ -11,193 +13,226 @@ type Track = {
   lessonCount: number;
   completedCount: number;
 };
-
 type Lesson = {
   userLessonId: string;
   title: string;
-  status: string;
+  status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
   order: number;
+};
+const CATEGORY_LABELS: Record<string, string> = {
+  PROGRAMMING: 'Pemrograman',
+  LANGUAGE: 'Bahasa',
+  MATH: 'Matematika',
+  SCIENCE: 'Sains',
+  ENGINEERING: 'Teknik',
+  GENERAL: 'Umum',
 };
 
 export default function TrackPage() {
-  const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const { user } = useCurrentUser();
   const [tracks, setTracks] = useState<Track[]>([]);
-  const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState('');
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [error, setError] = useState('');
   useEffect(() => {
-    Promise.all([
-      apiFetch('/users/me'),
-      apiFetch<{ tracks: Track[] }>('/tracks'),
-    ])
-      .then(([userData, tracksData]) => {
-        setUser(userData);
-        const fetchedTracks = tracksData?.tracks || [];
-        setTracks(fetchedTracks);
-        if (fetchedTracks.length > 0 && fetchedTracks[0]) {
-          setSelectedTrackId(fetchedTracks[0].id);
-        }
+    apiFetch<{ tracks: Track[] }>('/tracks')
+      .then(({ tracks: data }) => {
+        setTracks(data);
+        setSelectedId(data[0]?.id || '');
         setLoading(false);
       })
-      .catch(() => {
-        removeAuthToken();
-        router.replace('/login');
+      .catch((caught) => {
+        setError(
+          caught instanceof Error ? caught.message : 'Tidak dapat memuat jalur',
+        );
+        setLoading(false);
       });
-  }, [router]);
-
+  }, []);
   useEffect(() => {
-    if (selectedTrackId) {
-      apiFetch<{ lessons: Lesson[] }>(`/tracks/${selectedTrackId}`)
-        .then((data) => {
-          setLessons(data.lessons || []);
-        })
-        .catch(console.error);
+    if (!selectedId) {
+      setLessons([]);
+      return;
     }
-  }, [selectedTrackId]);
-
-  if (loading) return <div className="p-8 max-w-4xl mx-auto">Loading...</div>;
-
+    apiFetch<{ lessons: Lesson[] }>(`/tracks/${selectedId}`).then((data) =>
+      setLessons(data.lessons),
+    );
+  }, [selectedId]);
+  const selected = tracks.find((track) => track.id === selectedId);
+  const current =
+    lessons.find((lesson) => lesson.status !== 'COMPLETED') || lessons[0];
+  const percent = selected?.lessonCount
+    ? Math.round((selected.completedCount / selected.lessonCount) * 100)
+    : 0;
+  const visibleNodes = useMemo(
+    () => [
+      ...lessons,
+      ...(lessons.length && (user?.freeGenerationsLeft || 0) > 0
+        ? [
+            {
+              userLessonId: 'next',
+              title: 'Tantangan berikutnya',
+              status: 'LOCKED' as const,
+              order: lessons.length + 1,
+            },
+          ]
+        : []),
+    ],
+    [lessons, user],
+  );
+  if (loading) return <PageSkeleton />;
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Your Learning Tracks</h1>
-        <div className="space-x-4">
-          <Link
-            href="/league"
-            className="text-blue-600 hover:text-blue-800 font-medium mr-4"
-          >
-            🏆 League
-          </Link>
-          <Link
-            href="/profile"
-            className="text-blue-600 hover:text-blue-800 font-medium mr-4"
-          >
-            👤 Profile
-          </Link>
-          <Link
-            href="/new"
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-          >
-            + New Lesson
-          </Link>
-          <button
-            type="button"
-            onClick={() => {
-              removeAuthToken();
-              router.replace('/welcome');
-            }}
-            className="text-gray-500 hover:text-gray-800"
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-xl shadow p-6 mb-8 border border-gray-100">
-        <h2 className="text-xl font-bold mb-4 text-gray-800">
-          Welcome, {user?.name}!
-        </h2>
-        <div className="flex gap-6 text-sm text-gray-600">
+    <div className="track-page page-wrap">
+      {error && <div className="alert error">{error}</div>}
+      {!tracks.length ? (
+        <section className="surface empty-state">
+          <Icon name="layers" />
+          <h1>Buat jalur belajar pertamamu</h1>
           <p>
-            <span className="font-semibold">Pace:</span> {user?.pace}
+            Beri tahu Edisco apa yang ingin kamu pelajari dan kami akan
+            mengubahnya menjadi jalur interaktif yang jelas.
           </p>
-          <p>
-            <span className="font-semibold">Generations left:</span>{' '}
-            {user?.freeGenerationsLeft}
-          </p>
-        </div>
-      </div>
-
-      {tracks.length === 0 ? (
-        <div className="text-center p-16 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
-          <h3 className="text-xl font-medium text-gray-700 mb-2">
-            No tracks yet
-          </h3>
-          <p className="text-gray-500 mb-6">
-            Start your learning journey by generating your first lesson.
-          </p>
-          <Link
-            href="/new"
-            className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 text-lg font-medium"
-          >
-            Generate First Lesson
+          <Link href="/new" className="primary-button">
+            Buat pelajaran
           </Link>
-        </div>
+        </section>
       ) : (
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="md:col-span-1 space-y-3">
-            <h3 className="font-semibold text-gray-700 mb-4 uppercase text-sm tracking-wider">
-              Tracks
-            </h3>
-            {tracks.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setSelectedTrackId(t.id)}
-                className={`w-full text-left p-4 rounded-lg border transition-colors ${selectedTrackId === t.id ? 'bg-blue-50 border-blue-200 text-blue-800' : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700'}`}
+        <>
+          <div className="track-heading surface">
+            <div>
+              <span>Jalur belajar</span>
+              <select
+                aria-label="Pilih jalur belajar"
+                value={selectedId}
+                onChange={(event) => setSelectedId(event.target.value)}
               >
-                <div className="font-medium truncate">{t.title}</div>
-                <div className="text-xs mt-1 opacity-75">{t.category}</div>
-                <div className="mt-3 bg-gray-200 h-1.5 rounded-full overflow-hidden">
-                  <div
-                    className="bg-blue-500 h-full"
-                    style={{
-                      width: `${t.lessonCount > 0 ? (t.completedCount / t.lessonCount) * 100 : 0}%`,
-                    }}
-                  />
-                </div>
-              </button>
-            ))}
-          </div>
-
-          <div className="md:col-span-2">
-            <h3 className="font-semibold text-gray-700 mb-4 uppercase text-sm tracking-wider">
-              Lessons
-            </h3>
-            <div className="space-y-3">
-              {lessons.map((lesson) => (
-                <Link
-                  href={`/lesson/${lesson.userLessonId}`}
-                  key={lesson.userLessonId}
-                  className="block bg-white p-5 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-medium text-blue-600 mb-1">
-                        Lesson {lesson.order}
-                      </div>
-                      <div className="text-lg font-medium text-gray-900">
-                        {lesson.title}
-                      </div>
-                    </div>
-                    <div className="flex-shrink-0">
-                      {lesson.status === 'COMPLETED' ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Completed
-                        </span>
-                      ) : lesson.status === 'IN_PROGRESS' ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                          In Progress
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          Not Started
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-              {lessons.length === 0 && (
-                <div className="text-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
-                  No lessons found in this track.
-                </div>
-              )}
+                {tracks.map((track) => (
+                  <option key={track.id} value={track.id}>
+                    {track.title}
+                  </option>
+                ))}
+              </select>
             </div>
+            <Icon name="layers" />
           </div>
-        </div>
+          <div className="track-layout">
+            <section
+              className="learning-path scenery"
+              aria-label={`Jalur belajar ${selected?.title}`}
+            >
+              <div className="track-intro">
+                <small>
+                  {selected?.category
+                    ? CATEGORY_LABELS[selected.category] ||
+                      selected.category.replaceAll('_', ' ')
+                    : ''}
+                </small>
+                <h1>{selected?.title}</h1>
+                <p>Selesaikan pelajaran berikut untuk menguasai topik ini.</p>
+              </div>
+              <div className="path-nodes">
+                {visibleNodes.map((lesson, index) => {
+                  const locked = lesson.status === 'LOCKED';
+                  const done = lesson.status === 'COMPLETED';
+                  return (
+                    <div
+                      className={`path-node ${index % 2 ? 'left' : 'right'} ${done ? 'done' : ''}`}
+                      key={lesson.userLessonId}
+                    >
+                      <span className="path-line" />
+                      {locked ? (
+                        <Link
+                          href="/new"
+                          className="node-button locked"
+                          aria-label="Buat pelajaran berikutnya"
+                        >
+                          <Icon name="lock" />
+                        </Link>
+                      ) : (
+                        <Link
+                          href={`/lesson/${lesson.userLessonId}`}
+                          className={`node-button ${index === 0 || lesson.status === 'IN_PROGRESS' ? 'current' : ''}`}
+                          aria-label={`Buka ${lesson.title}`}
+                        >
+                          <Icon name={done ? 'check' : 'play'} />
+                        </Link>
+                      )}
+                      <div className="node-copy">
+                        <strong>
+                          {lesson.order}. {lesson.title}
+                        </strong>
+                        <span>
+                          {done
+                            ? 'Selesai'
+                            : locked
+                              ? 'Buat pelajaran berikutnya'
+                              : lesson.status === 'IN_PROGRESS'
+                                ? 'Lanjutkan'
+                                : 'Mulai perjalananmu'}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+            <aside className="track-aside">
+              <section className="surface progress-card">
+                <h2>Kemajuanmu</h2>
+                <div
+                  className="progress-ring"
+                  style={
+                    {
+                      '--progress': `${percent * 3.6}deg`,
+                    } as React.CSSProperties
+                  }
+                >
+                  <span>
+                    {selected?.completedCount || 0}/{selected?.lessonCount || 0}
+                  </span>
+                </div>
+                <strong>{percent}%</strong>
+                <p>Pelajaran selesai</p>
+              </section>
+              {current && (
+                <section className="surface current-card">
+                  <h2>Pelajaran Saat Ini</h2>
+                  <div>
+                    <span>
+                      <Icon name="play" />
+                    </span>
+                    <p>
+                      <strong>
+                        {current.order}. {current.title}
+                      </strong>
+                      <small>
+                        {current.status === 'IN_PROGRESS'
+                          ? 'Lanjutkan dari terakhir belajar'
+                          : 'Siap saat kamu siap'}
+                      </small>
+                    </p>
+                  </div>
+                  <Link
+                    href={`/lesson/${current.userLessonId}`}
+                    className="primary-button"
+                  >
+                    Lanjutkan Pelajaran <Icon name="arrow-right" width={18} />
+                  </Link>
+                </section>
+              )}
+              <section className="surface tip-card">
+                <Icon name="target" />
+                <p>
+                  <strong>Tips belajar</strong>
+                  <span>
+                    Langkah kecil yang diulang secara rutin menghasilkan
+                    kemajuan yang bertahan lama.
+                  </span>
+                </p>
+              </section>
+            </aside>
+          </div>
+        </>
       )}
     </div>
   );

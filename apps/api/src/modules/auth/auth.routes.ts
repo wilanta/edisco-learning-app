@@ -1,17 +1,17 @@
+import { users } from '@edisco/database/schema';
+import bcrypt from 'bcryptjs';
+import { eq } from 'drizzle-orm';
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
-import bcrypt from 'bcryptjs';
-import { users } from '@edisco/database/schema';
-import { eq } from 'drizzle-orm';
 
 const registerSchema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().email(),
   password: z.string().min(6),
   name: z.string().min(1),
 });
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().email(),
   password: z.string().min(1),
 });
 
@@ -25,7 +25,8 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       });
     }
 
-    const { email, password, name } = parseResult.data;
+    const { password, name } = parseResult.data;
+    const email = parseResult.data.email.toLowerCase();
 
     const existingUser = await fastify.db.query.users.findFirst({
       where: eq(users.email, email),
@@ -71,7 +72,8 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       });
     }
 
-    const { email, password } = parseResult.data;
+    const { password } = parseResult.data;
+    const email = parseResult.data.email.toLowerCase();
 
     const user = await fastify.db.query.users.findFirst({
       where: eq(users.email, email),
