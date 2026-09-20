@@ -11,13 +11,11 @@ coverage/
 
 # All environment files, including examples, at every directory level
 .env
-.env.*
-*.env
-*.env.*
 
 # Keep development documentation local, except the startup guide
 *.[mM][dD]
 !howtostart.md
+!README.md
 
 # Private keys and local credentials
 *.pem
